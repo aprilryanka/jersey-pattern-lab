@@ -100,14 +100,6 @@ function drawLayer(ctx, L) {
   ctx.restore();
 }
 
-export function watermark(ctx, w, h, a = .4) {
-  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.translate(w / 2, h / 2); ctx.rotate(-.5);
-  const fs = Math.max(14, Math.min(w, h) * .035); ctx.font = `700 ${fs}px "Barlow Condensed", sans-serif`; ctx.textAlign = 'center';
-  ctx.lineWidth = fs * .12; ctx.lineJoin = 'round'; ctx.strokeStyle = `rgba(0,0,0,${a * .9})`; ctx.fillStyle = `rgba(255,255,255,${a})`;
-  const gx = fs * 21, gy = fs * 5.5, n = Math.ceil(Math.hypot(w, h) / gy / 2) + 1;
-  for (let i = -n; i <= n; i++) for (let j = -3; j <= 3; j++) { const x = j * gx + (i % 2 ? gx / 2 : 0); ctx.strokeText('JERSEY PATTERN LAB · PREVIEW', x, i * gy); ctx.fillText('JERSEY PATTERN LAB · PREVIEW', x, i * gy); }
-  ctx.restore();
-}
 
 /** Isi panel dengan sumber pattern aktif (Basic/Advanced) dalam ruang pola. */
 function fillPattern(ctx, L, p, S, adv) {
@@ -133,7 +125,7 @@ function fillPattern(ctx, L, p, S, adv) {
 
 /**
  * Render atlas ke ctx. sc = piksel per mm. Kanvas berukuran Wmm*sc × Hmm*sc.
- * opts: { watermark:bool, layers:bool }
+ * opts: { layers:bool }
  */
 export function renderAtlas(ctx, L, S, adv, sc, opts = {}) {
   const W = ctx.canvas.width, H = ctx.canvas.height;
@@ -153,7 +145,6 @@ export function renderAtlas(ctx, L, S, adv, sc, opts = {}) {
     ctx.restore();
   }
   if (opts.layers !== false) renderLayers(ctx, L, S, sc);
-  if (opts.watermark) watermark(ctx, W, H, .35);
 }
 
 /** Gambar semua layer teks/gambar di atas atlas. */
@@ -184,6 +175,5 @@ export function renderPanel(L, S, adv, p, sc, margin = 10, opts = {}) {
   panelPath(ctx, p, x => x - L2.uMin, y => L2.vTop - y);
   ctx.fillStyle = '#000'; ctx.fill();
   ctx.globalCompositeOperation = 'source-over';
-  if (opts.watermark) watermark(ctx, w, h, .35);
   return c;
 }

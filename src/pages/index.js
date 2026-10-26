@@ -11,8 +11,8 @@ const FAQ_FALLBACK = [
   ['Berapa lama pengerjaan jersey fisik?', 'Estimasi 14 hari kerja untuk pesanan di bawah 100 pcs. Untuk 100 pcs ke atas, estimasi dikonfirmasi lewat WhatsApp.'],
 ];
 const PLAN_FALLBACK = [
-  { id: 'free', name: 'Gratis', price_monthly: 0, features: ['Mode Basic: 8 motif', 'Pratinjau 3D dan pola jahit 2D', 'Export pattern 1024 px dengan watermark', 'Simpan 3 project'] },
-  { id: 'pro', name: 'Pro', price_monthly: 150000, features: ['Mode Advanced penuh', 'Export pattern hingga 3000 px', 'Export pola jahit skala 1:1 (SVG/PNG)', 'Snapshot 3D resolusi tinggi', 'Tanpa watermark', 'Project tanpa batas'] },
+  { id: 'free', name: 'Gratis', price_monthly: 0, features: ['Mode Basic: 8 motif', 'Pratinjau 3D dan pola jahit 2D', 'Simpan 3 project', 'Tanpa export file'] },
+  { id: 'pro', name: 'Pro', price_monthly: 150000, features: ['Mode Advanced penuh', 'Export pattern hingga 3000 px', 'Export pola jahit skala 1:1 (SVG/PNG)', 'Snapshot 3D hingga 4096 px', 'Project tanpa batas'] },
 ];
 const withTimeout = (p, ms = 6000) => Promise.race([p, new Promise(r => setTimeout(() => r({ data: null, error: 'timeout' }), ms))]);
 

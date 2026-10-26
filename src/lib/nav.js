@@ -43,5 +43,8 @@ export async function mountNav(current, { tag } = {}) {
   menu.onclick = () => { const o = pill.classList.toggle('open'); menu.setAttribute('aria-expanded', String(o)); };
   const wrap = E('div', { className: 'navwrap' }, pill);
   document.body.prepend(wrap);
+  if (import.meta.env.VITE_PREVIEW) {
+    document.body.append(E('div', { className: 'preview-note', role: 'note', text: 'Mode pratinjau: tampilan saja. Login, langganan, dan data database aktif setelah deploy.' }));
+  }
   return me;
 }

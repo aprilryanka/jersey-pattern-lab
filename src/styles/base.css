@@ -134,3 +134,4 @@ h1, h2, h3 { text-wrap: balance; }
   .pill .act .btn.primary { display: none; }
 }
 @media (max-width: 360px) { .pill .logo b { display: none; } }
+.preview-note { position: fixed; left: 50%; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 60; background: var(--ink); color: var(--bg); font: 500 12px/1.3 var(--f-mono); padding: 7px 14px; border-radius: 999px; max-width: calc(100vw - 24px); text-align: center; pointer-events: none; opacity: .92; }

@@ -1,12 +1,12 @@
 // Export: pattern (tile), pola jahit skala 1:1 (SVG/PNG), dan snapshot 3D.
 import { drawBasic } from './basic.js';
-import { renderAtlas, renderPanel, panelPath, watermark } from './atlas.js';
+import { renderAtlas, renderPanel, panelPath } from './atlas.js';
 
 const esc = s => String(s).replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
 const toBlob = (c, type = 'image/png', q) => new Promise(r => c.toBlob(r, type, q));
 
 /** Tile pattern persegi. Basic: area 600×600 mm. Advanced: tile generator asli. */
-export async function exportPattern({ S, adv, size, jpg, wm, texSize }) {
+export async function exportPattern({ S, adv, size, jpg, texSize }) {
   const c = document.createElement('canvas'); c.width = c.height = size;
   const ctx = c.getContext('2d');
   if (S.mode === 'advanced') {
@@ -16,7 +16,6 @@ export async function exportPattern({ S, adv, size, jpg, wm, texSize }) {
     drawBasic(ctx, { x0: 0, y0: 0, x1: 600, y1: 600 }, { ...S.basic, gh: 600 });
     ctx.setTransform(1, 0, 0, 1, 0, 0);
   }
-  if (wm) watermark(ctx, size, size, .5);
   return toBlob(c, jpg ? 'image/jpeg' : 'image/png', .93);
 }
 
@@ -53,7 +52,7 @@ export async function exportSewingSVG({ L, S, adv, dpi = 100, modelName = 'Jerse
 }
 
 /** Pola jahit PNG: layout semua panel di satu lembar pada DPI tertentu. */
-export async function exportSewingPNG({ L, S, adv, dpi = 100, size = 'M', wm = false, progress = () => { } }) {
+export async function exportSewingPNG({ L, S, adv, dpi = 100, size = 'M', progress = () => { } }) {
   const sc = dpi / 25.4;
   const c = document.createElement('canvas'); c.width = Math.ceil(L.Wmm * sc); c.height = Math.ceil(L.Hmm * sc);
   if (c.width * c.height > 200e6) throw new Error('Resolusi terlalu besar untuk browser ini. Pilih DPI lebih kecil.');
@@ -70,7 +69,6 @@ export async function exportSewingPNG({ L, S, adv, dpi = 100, size = 'M', wm = f
   ctx.strokeStyle = '#000'; ctx.lineWidth = .35;
   for (const p of L.panels) { panelPath(ctx, p, x => x - L.uMin, y => L.vTop - y); ctx.stroke(); }
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  if (wm) watermark(ctx, c.width, c.height, .35);
   progress(.9, 'Menyimpan PNG…');
   return toBlob(c);
 }

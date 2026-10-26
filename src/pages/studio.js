@@ -5,7 +5,7 @@ import { mountNav } from '../lib/nav.js';
 import { $, $$, E, toast, modal, download, withProgress, shrinkImage } from '../lib/ui.js';
 import { BASIC_STYLES, BASIC_PALETTES, drawBasicThumb } from '../studio/basic.js';
 import { initAdvanced } from '../studio/advanced.js';
-import { layoutModel, renderAtlas, renderLayers, FONTS, watermark } from '../studio/atlas.js';
+import { layoutModel, renderAtlas, renderLayers, FONTS } from '../studio/atlas.js';
 import { Viewer3D } from '../studio/viewer3d.js';
 import { Editor2D } from '../studio/editor2d.js';
 import { exportPattern, exportSewingSVG, exportSewingPNG } from '../studio/exporter.js';
@@ -404,42 +404,42 @@ $('#btnProjects').onclick = async () => {
 };
 function newProject() { projectId = null; $('#projName').value = 'Desain tanpa judul'; history.replaceState(null, '', '/studio'); defaultLayers(); S.panelFill = {}; syncLayers(); buildPanelFills(); invalidateBase(); $('#saveState').textContent = 'Desain baru'; }
 
-/* ---------------- Export ---------------- */
+/* ---------------- Export (khusus Pro) ---------------- */
+function exportUpsell() {
+  const feats = ['Pattern PNG/JPG hingga 3000 px', 'Pola jahit skala 1:1 (SVG vektor atau PNG cetak)', 'Snapshot 3D hingga 4096 px, latar studio, polos, atau transparan'];
+  modal('Export khusus member Pro', E('div', { style: { display: 'grid', gap: '14px' } },
+    E('p', { style: { margin: 0 }, text: 'Akun gratis bisa mendesain dan melihat hasilnya di 2D dan 3D. Untuk mengunduh file, berlangganan Pro.' }),
+    E('ul', { className: 'upsell' }, feats.map(f => E('li', { text: f }))),
+    me ? E('a', { className: 'btn primary lg', href: '/billing', text: 'Berlangganan Pro · Rp150.000/bulan' })
+      : E('div', { className: 'row' }, E('a', { className: 'btn primary', href: '/login?mode=signup&next=/billing', text: 'Daftar dan berlangganan' }), E('a', { className: 'btn', href: '/login?next=/studio', text: 'Sudah punya akun? Masuk' })),
+    E('p', { className: 'hint', text: 'Desainmu tetap tersimpan di browser ini.' })));
+}
 $('#btnExport').onclick = () => {
-  const needLogin = !me && !(import.meta.env.DEV && location.search.includes('devpro'));
-  const lockNote = t => pro ? null : E('p', { className: 'hint', text: t });
-  // pattern
-  const pSize = E('select', { className: 'in' }, [1024, 2048, 3000].map(v => E('option', { value: v, text: v + ' px', disabled: !pro && v > 1024 })));
+  if (!pro) { scheduleDraft(); exportUpsell(); return; }
+  const pSize = E('select', { className: 'in' }, [1024, 2048, 3000].map(v => E('option', { value: v, text: v + ' px', selected: v === 3000 })));
   const pFmt = E('select', { className: 'in' }, E('option', { value: 'png', text: 'PNG' }), E('option', { value: 'jpg', text: 'JPG' }));
   const bPat = E('button', { className: 'btn primary', text: 'Unduh pattern' });
-  // pola jahit
   const sFmt = E('select', { className: 'in' }, E('option', { value: 'svg', text: 'SVG skala 1:1 (vektor + gambar)' }), E('option', { value: 'png', text: 'PNG lembar penuh' }));
   const sDpi = E('select', { className: 'in' }, [[72, '72 dpi (cepat)'], [100, '100 dpi'], [150, '150 dpi (cetak)']].map(([v, t]) => E('option', { value: v, text: t, selected: v === 100 })));
-  const bSew = E('button', { className: 'btn primary', text: pro ? 'Unduh pola jahit' : 'Khusus Pro' });
-  // 3D
+  const bSew = E('button', { className: 'btn primary', text: 'Unduh pola jahit' });
   const tView = E('select', { className: 'in' }, [['current', 'Sudut saat ini'], ['front', 'Depan'], ['back', 'Belakang'], ['three', 'Depan · belakang · samping']].map(([v, t]) => E('option', { value: v, text: t })));
-  const tSize = E('select', { className: 'in' }, [[1080, '1080 px'], [2048, '2048 px'], [4096, '4096 px']].map(([v, t]) => E('option', { value: v, text: t, disabled: !pro && v > 1080 })));
+  const tSize = E('select', { className: 'in' }, [[1080, '1080 px'], [2048, '2048 px'], [4096, '4096 px']].map(([v, t]) => E('option', { value: v, text: t, selected: v === 2048 })));
   const bShot = E('button', { className: 'btn primary', text: 'Unduh snapshot 3D' });
-  const body = E('div', { style: { display: 'grid', gap: '12px' } },
-    needLogin ? E('p', { className: 'err', text: 'Masuk dulu untuk mengunduh file. Desainmu tetap tersimpan di browser ini.' }) : null,
-    E('div', { className: 'xgrid' },
-      E('div', { className: 'xcard' }, E('h4', { text: 'Pattern' }), E('p', { text: S.mode === 'advanced' ? 'Tile pattern Advanced yang bisa diulang tanpa sambungan.' : 'Motif Basic area 60 × 60 cm.' }),
-        E('label', { className: 'field' }, 'Ukuran', pSize), E('label', { className: 'field' }, 'Format', pFmt), lockNote('Gratis: 1024 px dengan watermark.'), bPat),
-      E('div', { className: 'xcard' }, E('h4', {}, 'Pola jahit', E('span', { className: 'tag', text: 'PRO' })), E('p', { text: `Semua ${L?.panels.length || ''} panel ukuran ${model?.size_label || 'M'} dengan desain, garis potong, dan arah serat. Cetak 100% tanpa "fit to page".` }),
-        E('label', { className: 'field' }, 'Format', sFmt), E('label', { className: 'field' }, 'Resolusi gambar', sDpi), bSew),
-      E('div', { className: 'xcard' }, E('h4', { text: 'Snapshot 3D' }), E('p', { text: `Latar mengikuti pengaturan Tampilan (${S.bg.mode === 'transparent' ? 'transparan' : S.bg.mode === 'solid' ? 'polos' : 'studio'}).` }),
-        E('label', { className: 'field' }, 'Sudut', tView), E('label', { className: 'field' }, 'Ukuran', tSize), lockNote('Gratis: 1080 px dengan watermark.'), bShot)));
+  const body = E('div', { className: 'xgrid' },
+    E('div', { className: 'xcard' }, E('h4', { text: 'Pattern' }), E('p', { text: S.mode === 'advanced' ? 'Tile pattern Advanced yang bisa diulang tanpa sambungan.' : 'Motif Basic area 60 × 60 cm.' }),
+      E('label', { className: 'field' }, 'Ukuran', pSize), E('label', { className: 'field' }, 'Format', pFmt), bPat),
+    E('div', { className: 'xcard' }, E('h4', { text: 'Pola jahit' }), E('p', { text: `Semua ${L?.panels.length || ''} panel ukuran ${model?.size_label || 'M'} dengan desain, garis potong, dan arah serat. Cetak 100% tanpa "fit to page".` }),
+      E('label', { className: 'field' }, 'Format', sFmt), E('label', { className: 'field' }, 'Resolusi gambar', sDpi), bSew),
+    E('div', { className: 'xcard' }, E('h4', { text: 'Snapshot 3D' }), E('p', { text: `Latar mengikuti pengaturan Tampilan (${S.bg.mode === 'transparent' ? 'transparan' : S.bg.mode === 'solid' ? 'polos' : 'studio'}).` }),
+      E('label', { className: 'field' }, 'Sudut', tView), E('label', { className: 'field' }, 'Ukuran', tSize), bShot));
   const m = modal('Export', body, { wide: true });
-  const guard = () => { if (needLogin) { m.close(); location.href = '/login?next=/studio'; return false; } return true; };
   bPat.onclick = async () => {
-    if (!guard()) return; m.close();
+    m.close();
     const size = +pSize.value, jpg = pFmt.value === 'jpg';
-    const blob = await withProgress(`Menyiapkan pattern ${size} px`, async set => { set(.3); return exportPattern({ S, adv, size, jpg, wm: !pro, texSize: S.mode === 'advanced' ? 1024 : 560 }); });
+    const blob = await withProgress(`Menyiapkan pattern ${size} px`, async set => { set(.3); return exportPattern({ S, adv, size, jpg, texSize: S.mode === 'advanced' ? 1024 : 560 }); });
     download(blob, `jpl-pattern-${size}px.${jpg ? 'jpg' : 'png'}`); if (S.mode === 'advanced') invalidateBase();
   };
   bSew.onclick = async () => {
-    if (!guard()) return;
-    if (!pro) { m.close(); location.href = '/billing'; return; }
     m.close();
     const dpi = +sDpi.value, svg = sFmt.value === 'svg';
     try {
@@ -451,13 +451,23 @@ $('#btnExport').onclick = () => {
     } catch (e) { toast(e.message || 'Export gagal'); }
   };
   bShot.onclick = async () => {
-    if (!guard()) return; m.close();
+    m.close();
     const size = +tSize.value, v = tView.value;
     const views = v === 'current' ? null : v === 'three' ? ['front', 'back', 'side'] : [v];
-    const c = await withProgress('Merender snapshot 3D', async set => { set(.4); return viewer.snapshot({ width: size, height: size, bg: S.bg, views, watermark: pro ? null : (ctx, w, h) => watermark(ctx, w, h, .4) }); });
+    const c = await withProgress('Merender snapshot 3D', async set => { set(.4); return viewer.snapshot({ width: size, height: size, bg: S.bg, views }); });
     c.toBlob(b => download(b, `jpl-3d-${v}-${size}px.png`), 'image/png');
   };
 };
+
+/* ---------------- proteksi gambar untuk akun gratis ---------------- */
+// Akun gratis tidak bisa klik kanan / tekan lama untuk menyimpan gambar desain.
+function protectImages() {
+  if (pro) return;
+  document.body.classList.add('protect');
+  const block = e => { if (e.target.closest('canvas, .styles, .adv, .layers img')) e.preventDefault(); };
+  document.addEventListener('contextmenu', block);
+  document.addEventListener('dragstart', block);
+}
 
 /* ---------------- tur ---------------- */
 $('#btnTour').onclick = () => startTour(undefined, { onTab: t => setTab(t === 'view' ? 'view' : t) });
@@ -467,6 +477,7 @@ requestAnimationFrame(frame);
 (async () => {
   me = await mountNav('studio', { tag: 'STUDIO' });
   pro = isPro(me) || (import.meta.env.DEV && location.search.includes('devpro'));
+  protectImages();
   syncBasic(); syncEdit(); syncView();
   await loadModels();
   const startModel = models[0];

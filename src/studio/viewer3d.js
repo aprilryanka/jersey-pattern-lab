@@ -159,7 +159,7 @@ export class Viewer3D {
    * Snapshot PNG. bg: {mode:'studio'|'solid'|'transparent', color, studio:[a,b]}
    * views: ['front'] atau beberapa sudut sekaligus (digabung berjajar).
    */
-  async snapshot({ width = 1600, height = 1600, bg = { mode: 'studio' }, views = null, watermark = null } = {}) {
+  async snapshot({ width = 1600, height = 1600, bg = { mode: 'studio' }, views = null } = {}) {
     const r = this.renderer, oldSize = r.getSize(new THREE.Vector2()), oldPR = r.getPixelRatio();
     const keepPos = this.camera.position.clone(), keepAuto = this.controls.autoRotate;
     this.controls.autoRotate = false;
@@ -176,7 +176,6 @@ export class Viewer3D {
     }
     r.setPixelRatio(oldPR); r.setSize(oldSize.x, oldSize.y, false); this.resize();
     this.camera.position.copy(keepPos); this.controls.update(); this.controls.autoRotate = keepAuto;
-    if (watermark) watermark(ctx, out.width, out.height);
     return out;
   }
 }

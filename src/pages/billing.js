@@ -20,7 +20,7 @@ const STATUS = { pending: 'Menunggu verifikasi', approved: 'Disetujui', rejected
   $('#waConfirm').href = waLink(`Halo admin Jersey Pattern Lab, saya sudah transfer ${rp(price)} untuk langganan Pro. Email akun: ${me.user.email}`, wa);
 
   const { data: plan } = await sb.from('plans').select('features').eq('id', 'pro').maybeSingle();
-  const feats = plan?.features || ['Mode Advanced penuh', 'Export pattern hingga 3000 px', 'Export pola jahit skala 1:1', 'Snapshot 3D resolusi tinggi', 'Tanpa watermark', 'Project tanpa batas'];
+  const feats = plan?.features || ['Mode Advanced penuh', 'Export pattern hingga 3000 px', 'Export pola jahit skala 1:1', 'Snapshot 3D hingga 4096 px', 'Project tanpa batas'];
   $('#feat').replaceChildren(...feats.map(f => E('li', { text: f })));
 
   function renderStatus() {
@@ -28,7 +28,7 @@ const STATUS = { pending: 'Menunggu verifikasi', approved: 'Disetujui', rejected
     const st = $('#status'); st.replaceChildren();
     if (p.role === 'admin') st.append('Akun admin: semua fitur Pro aktif.');
     else if (eff === 'pro') st.append('Status: ', E('span', { className: 'pill-s pro', text: 'PRO' }), ' aktif sampai ', E('b', { text: fmtDate(p.plan_until) }), '. Bayar lagi sebelum tanggal itu untuk memperpanjang.');
-    else st.append('Status: ', E('b', { text: 'Gratis' }), p.plan_until ? ` (Pro berakhir ${fmtDate(p.plan_until)})` : '', '. Upgrade untuk membuka mode Advanced dan export tanpa watermark.');
+    else st.append('Status: ', E('b', { text: 'Gratis' }), p.plan_until ? ` (Pro berakhir ${fmtDate(p.plan_until)})` : '', '. Upgrade untuk membuka mode Advanced dan semua export file.');
   }
   renderStatus();
 
