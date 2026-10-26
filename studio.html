@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Studio · Jersey Pattern Lab</title>
+<meta name="description" content="Desain jersey dengan generator pattern, lihat langsung di 3D, dan export pola jahit skala 1:1.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;1,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Anton&family=Bebas+Neue&family=Kanit:ital,wght@0,800;1,800&family=Big+Shoulders+Display:wght@900&family=Saira+Condensed:wght@800&family=Teko:wght@700&family=Oswald:wght@700&family=Russo+One&family=Squada+One&family=Staatliches&family=Fjalla+One&family=Passion+One:wght@900&family=Racing+Sans+One&family=Black+Ops+One&family=Chakra+Petch:wght@700&family=Orbitron:wght@800&family=Bungee&family=Graduate&family=Alfa+Slab+One&family=Bowlby+One&family=Changa+One&family=Archivo+Black&family=Rubik+Mono+One&family=Permanent+Marker&family=Bricolage+Grotesque:wght@800&display=swap">
+</head>
+<body class="studio">
+<div class="studio-bar">
+  <input id="projName" class="proj-name" value="Desain tanpa judul" aria-label="Nama project" maxlength="60">
+  <span class="save-state" id="saveState"></span>
+  <span class="sp"></span>
+  <div class="seg" role="group" aria-label="Tata letak">
+    <button type="button" data-layout="split" aria-pressed="true">Split</button>
+    <button type="button" data-layout="2d" aria-pressed="false">Pola</button>
+    <button type="button" data-layout="3d" aria-pressed="false">3D</button>
+  </div>
+  <button class="btn sm" type="button" id="btnProjects">Project saya</button>
+  <button class="btn sm" type="button" id="btnSave" data-tour="save">Simpan</button>
+  <button class="btn sm primary" type="button" id="btnExport" data-tour="export">Export</button>
+  <button class="btn sm ghost icon" type="button" id="btnTour" aria-label="Mulai panduan" title="Panduan">?</button>
+</div>
+
+<main id="main" data-layout="split">
+  <section class="pane" id="pane2d" data-tour="pane2d" aria-label="Pola jahit">
+    <div class="phead">
+      <h2>Pola jahit</h2><span class="hint" id="pcount"></span><span class="sp"></span>
+      <div class="seg" role="group" aria-label="Satuan">
+        <button type="button" data-unit="cm" aria-pressed="true">cm</button>
+        <button type="button" data-unit="in" aria-pressed="false">in</button>
+      </div>
+    </div>
+    <div class="stage"><canvas id="c2d" aria-label="Pola jahit. Seret untuk menggeser, scroll atau pinch untuk zoom."></canvas>
+      <div class="zbar"><button type="button" id="zOut" aria-label="Perkecil">−</button><span id="zPct" class="num">100%</span><button type="button" id="zIn" aria-label="Perbesar">+</button><button type="button" id="zFit">Fit</button></div>
+      <div class="foot" id="foot2d"></div>
+    </div>
+  </section>
+  <section class="pane" id="pane3d" data-tour="pane3d" aria-label="Pratinjau 3D">
+    <div class="phead">
+      <h2>3D</h2>
+      <select id="modelSel" class="in sm" aria-label="Model jersey"></select>
+      <span class="sp"></span>
+      <div class="seg" role="group" aria-label="Sudut kamera">
+        <button type="button" data-cam="front" aria-pressed="true">Depan</button>
+        <button type="button" data-cam="back" aria-pressed="false">Belakang</button>
+        <button type="button" data-cam="side" aria-pressed="false">Samping</button>
+      </div>
+      <button class="ibtn" type="button" id="spin" aria-pressed="false">Putar</button>
+    </div>
+    <div class="stage bg-studio" id="wrap3d"><canvas id="c3d" aria-label="Pratinjau 3D, seret untuk memutar"></canvas>
+      <div class="overlay" id="ov3d">Memuat model 3D…</div>
+      <span class="live">Live preview</span>
+    </div>
+  </section>
+
+  <aside class="side" aria-label="Kontrol desain">
+    <div class="tabs" role="tablist">
+      <button role="tab" type="button" data-tab="pattern" aria-selected="true">Pattern</button>
+      <button role="tab" type="button" data-tab="edit" aria-selected="false" data-tour="tab-edit">Edit</button>
+      <button role="tab" type="button" data-tab="elements" aria-selected="false" data-tour="tab-elements">Elemen</button>
+      <button role="tab" type="button" data-tab="view" aria-selected="false" data-tour="tab-view">Tampilan</button>
+    </div>
+
+    <!-- PATTERN -->
+    <div class="tabpane" data-pane="pattern">
+      <section>
+        <div class="seg wide" role="group" aria-label="Mode generator" data-tour="mode">
+          <button type="button" data-mode="basic" aria-pressed="true">Basic</button>
+          <button type="button" data-mode="advanced" aria-pressed="false">Advanced <span class="pro">PRO</span></button>
+        </div>
+      </section>
+      <div id="basicPanel">
+        <section data-tour="motif">
+          <h3>Motif</h3>
+          <div class="styles" id="styles"></div>
+          <button class="btn primary" type="button" id="rollAll">Acak semua</button>
+          <div class="row">
+            <label class="field">Warna 1 (dasar)<input type="color" id="col0"></label>
+            <label class="field">Warna 2<input type="color" id="col1"></label>
+            <label class="field">Warna 3<input type="color" id="col2"></label>
+          </div>
+          <div class="palettes" id="palettes" aria-label="Palet cepat"></div>
+          <div class="row">
+            <button class="btn sm" type="button" id="rollCol">Acak warna</button>
+            <button class="btn sm" type="button" id="rollSeed">Acak bentuk</button>
+          </div>
+          <label class="field">Ukuran motif <span class="v" id="vScale"></span><input type="range" id="bScale" min="0.4" max="2.6" step="0.05"></label>
+        </section>
+      </div>
+      <div id="advPanel" hidden>
+        <div class="lock" id="advLock" hidden>
+          <b>Mode Advanced khusus member Pro</b>
+          <p>Generator lengkap Jersey Pattern Lab: 9 gaya noise, 12 palet, finishing, efek glass dan brush, foto sebagai sumber pattern, plus 26 sample siap pakai.</p>
+          <a class="btn primary" href="/billing">Berlangganan Pro · Rp150.000/bulan</a>
+        </div>
+        <div id="advHost" class="adv"></div>
+      </div>
+    </div>
+
+    <!-- EDIT PATTERN -->
+    <div class="tabpane" data-pane="edit" hidden>
+      <section>
+        <h3>Edit pattern</h3>
+        <label class="field">Skala <span class="v" id="vEScale"></span><input type="range" id="eScale" min="0.3" max="3" step="0.05"></label>
+        <label class="field">Rotasi <span class="v" id="vERot"></span><input type="range" id="eRot" min="-180" max="180" step="1"></label>
+        <label class="field">Geser horizontal <span class="v" id="vEX"></span><input type="range" id="eX" min="-400" max="400" step="2"></label>
+        <label class="field">Geser vertikal <span class="v" id="vEY"></span><input type="range" id="eY" min="-400" max="400" step="2"></label>
+        <label class="field" id="repWrap">Ulangan keliling badan <span class="v" id="vERep"></span><input type="range" id="eRep" min="1" max="6" step="1"></label>
+        <label class="chk"><input type="checkbox" id="eFlip"> Cermin horizontal</label>
+        <label class="chk"><input type="checkbox" id="eSeam"> Sambung motif depan–belakang</label>
+        <p class="hint">Saat disambung, motif badan depan berlanjut ke belakang di jahitan sisi, seperti kain fullprint sungguhan.</p>
+        <button class="btn sm" type="button" id="eReset">Reset edit</button>
+      </section>
+      <section>
+        <h3>Isi per panel</h3>
+        <p class="hint">Klik panel di pola 2D untuk memilihnya cepat.</p>
+        <div class="panel-fills" id="panelFills"></div>
+        <label class="field">Warna rib / trim default<input type="color" id="ribColor"></label>
+      </section>
+    </div>
+
+    <!-- ELEMEN -->
+    <div class="tabpane" data-pane="elements" hidden>
+      <section>
+        <h3>Tambah</h3>
+        <div class="grid2">
+          <button class="btn sm" type="button" id="addName">+ Nama</button>
+          <button class="btn sm" type="button" id="addNumber">+ Nomor</button>
+          <button class="btn sm" type="button" id="addText">+ Teks</button>
+          <label class="btn sm filebtn">+ Logo tim<input type="file" accept="image/*" id="upTeam" class="sr-only"></label>
+          <label class="btn sm filebtn">+ Sponsor<input type="file" accept="image/*" id="upSponsor" class="sr-only"></label>
+          <label class="btn sm filebtn">+ Logo apparel<input type="file" accept="image/*" id="upApparel" class="sr-only"></label>
+        </div>
+        <p class="hint">Upload PNG transparan, maksimal 8 MB. Seret di pola 2D untuk memindahkan.</p>
+      </section>
+      <section>
+        <h3>Layer</h3>
+        <div class="layers" id="layerList"></div>
+        <div id="layerForm" class="layer-form">
+          <label class="field" data-for="text">Isi teks<textarea id="lText" rows="2" maxlength="60"></textarea></label>
+          <div class="row" data-for="text">
+            <label class="field">Font<select id="lFont"></select></label>
+          </div>
+          <label class="field" data-for="text">Tinggi huruf <span class="v" id="vLSize"></span><input type="range" id="lSize" min="10" max="420" step="1"></label>
+          <label class="field" data-for="image">Lebar gambar <span class="v" id="vLW"></span><input type="range" id="lW" min="10" max="500" step="1"></label>
+          <div class="row" data-for="text">
+            <label class="field">Warna<input type="color" id="lColor"></label>
+            <label class="field">Garis tepi<input type="color" id="lStroke"></label>
+          </div>
+          <label class="field" data-for="text">Tebal garis tepi <span class="v" id="vLSW"></span><input type="range" id="lStrokeW" min="0" max="14" step="0.5"></label>
+          <label class="chk" data-for="text"><input type="checkbox" id="lItalic"> Miring</label>
+          <label class="field">Rotasi <span class="v" id="vLRot"></span><input type="range" id="lRot" min="-180" max="180" step="1"></label>
+          <label class="field">Opasitas <span class="v" id="vLOp"></span><input type="range" id="lOp" min="0.1" max="1" step="0.05"></label>
+          <label class="field">Panel<select id="lPanel"></select></label>
+          <div class="row">
+            <button class="btn sm" type="button" id="lCenter">Tengah</button>
+            <button class="btn sm" type="button" id="lDup">Duplikat</button>
+            <button class="btn sm" type="button" id="lUp" aria-label="Naikkan">↑</button>
+            <button class="btn sm" type="button" id="lDown" aria-label="Turunkan">↓</button>
+            <button class="btn sm danger" type="button" id="lDel">Hapus</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- TAMPILAN -->
+    <div class="tabpane" data-pane="view" hidden>
+      <section>
+        <h3>Latar 3D</h3>
+        <div class="seg wide" role="group" aria-label="Latar">
+          <button type="button" data-bg="studio" aria-pressed="true">Studio</button>
+          <button type="button" data-bg="solid" aria-pressed="false">Polos</button>
+          <button type="button" data-bg="transparent" aria-pressed="false">Transparan</button>
+        </div>
+        <label class="field" id="bgColorWrap" hidden>Warna latar<input type="color" id="bgColor" value="#ffffff"></label>
+        <label class="chk"><input type="checkbox" id="floorShadow" checked> Bayangan lantai</label>
+        <p class="hint">Latar ikut tersimpan di snapshot 3D. Transparan menghasilkan PNG tanpa latar.</p>
+      </section>
+      <section>
+        <h3>Kain</h3>
+        <label class="field">Ukuran rajut <span class="v" id="vKnit"></span><input type="range" id="knit" min="2" max="9" step="0.1"></label>
+        <label class="field">Kedalaman tekstur <span class="v" id="vNormal"></span><input type="range" id="normal" min="0" max="1.6" step="0.05"></label>
+        <label class="field">Kilap serat <span class="v" id="vSheen"></span><input type="range" id="sheen" min="0" max="1" step="0.05"></label>
+      </section>
+    </div>
+  </aside>
+</main>
+<script type="module" src="/src/pages/studio.js"></script>
+</body>
+</html>

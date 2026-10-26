@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Langganan · Jersey Pattern Lab</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+</head>
+<body class="page">
+<main class="page-main">
+  <header class="page-head">
+    <p class="eyebrow">Langganan</p>
+    <h1>Jersey Pattern Lab Pro</h1>
+    <div class="status" id="status">Memuat status akun…</div>
+  </header>
+  <div class="bill-grid">
+    <section class="card-l">
+      <h2>Pro · <span id="price">Rp150.000</span> <small>/ 30 hari</small></h2>
+      <ul class="checks" id="feat"></ul>
+    </section>
+    <section class="card-l">
+      <h2>Cara bayar</h2>
+      <ol class="pay-steps">
+        <li>Transfer <b id="amount">Rp150.000</b> ke rekening berikut.
+          <div class="acct"><span id="bank">BCA</span><b class="num" id="acctNo">—</b><button class="btn sm" type="button" id="copyAcct">Salin</button></div>
+          <small class="hint" id="acctName"></small>
+        </li>
+        <li>Upload foto atau screenshot bukti transfer di bawah ini.</li>
+        <li>Admin memverifikasi (biasanya di hari yang sama). Pro aktif 30 hari, dan diperpanjang otomatis dari tanggal berakhir bila kamu bayar sebelum habis.</li>
+      </ol>
+      <form id="payForm" class="pay-form" novalidate>
+        <label class="field">Bukti transfer (JPG/PNG, maks. 5 MB)<input type="file" id="proof" accept="image/*" required></label>
+        <img id="proofPrev" alt="Pratinjau bukti transfer" hidden>
+        <label class="field">Catatan (opsional)<input type="text" id="note" maxlength="140" placeholder="Misal: transfer atas nama Budi, BCA"></label>
+        <p class="err" id="err" role="alert"></p>
+        <p class="okmsg" id="ok" role="status"></p>
+        <button class="btn primary lg" type="submit" id="send">Kirim bukti transfer</button>
+        <a class="btn" id="waConfirm" target="_blank" rel="noopener noreferrer">Tanya admin via WhatsApp</a>
+      </form>
+    </section>
+  </div>
+  <section class="card-l">
+    <h2>Riwayat pembayaran</h2>
+    <div class="tw"><table class="tbl" id="hist"><thead><tr><th>Tanggal</th><th>Paket</th><th>Jumlah</th><th>Status</th><th>Catatan admin</th></tr></thead><tbody></tbody></table></div>
+  </section>
+</main>
+<script type="module" src="/src/pages/billing.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+/* Auth: kartu mengambang di tengah, latar penuh dari generator motif. */
+body.auth { min-height: 100vh; min-height: 100dvh; }
+#bg { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+body.auth::after { content: ""; position: fixed; inset: 0; z-index: 1; background: linear-gradient(160deg, rgba(4, 22, 21, .55), rgba(4, 22, 21, .82)); }
+.auth-main { position: relative; z-index: 2; min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: calc(96px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 40px max(16px, env(safe-area-inset-left, 0px)); }
+.auth-card { width: min(420px, 100%); background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: 30px 28px 24px; display: grid; gap: 14px; box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .55); }
+.auth-card .eyebrow { font: 500 11px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin: 0; }
+.auth-card h1 { margin: 0 0 4px; font: 800 36px/1 var(--f-display); text-transform: uppercase; }
+.auth-card .btn.lg { width: 100%; }
+.linkbtn { border: 0; background: none; padding: 2px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; font-size: 13px; justify-self: center; }
+.linkbtn.strong { color: var(--accent); font-weight: 600; }
+.switch { margin: 0; text-align: center; font-size: 14px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+.auth-card .err:empty, .auth-card .okmsg:empty { display: none; }
