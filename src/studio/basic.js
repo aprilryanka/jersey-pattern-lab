@@ -125,6 +125,17 @@ export function drawBasic(ctx, r, st) {
       ctx.globalAlpha = 1;
       break;
     }
+    case 'trace': { // hasil Trace (SVG) diulang seperti kain: kisi biasa atau half-drop
+      const T = st.trace; if (!T || !T.img || !T.img.complete || !T.img.naturalWidth) break;
+      const cell = Math.max(10, (T.tile || 90) * k), ar = T.img.naturalHeight / T.img.naturalWidth;
+      const iw = cell * (1 - (T.gap ?? .12)), ih = iw * ar, ch = Math.max(cell * ar, ih) + cell * (T.gap ?? .12);
+      const i0 = Math.floor(x0 / cell) - 1, i1 = Math.ceil(x1 / cell) + 1;
+      for (let i = i0; i < i1; i++) {
+        const off = T.half && (i & 1) ? ch / 2 : 0, j0 = Math.floor((y0 - off) / ch) - 1, j1 = Math.ceil((y1 - off) / ch) + 1;
+        for (let j = j0; j < j1; j++) ctx.drawImage(T.img, i * cell + (cell - iw) / 2, j * ch + off + (ch - ih) / 2, iw, ih);
+      }
+      break;
+    }
     default: break;
   }
 }
@@ -134,6 +145,7 @@ export function drawBasicThumb(canvas, st) {
   const x = canvas.getContext('2d'), sz = 170 * Math.max(.6, st.scale || 1);
   x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, canvas.width, canvas.height);
   x.save(); x.scale(canvas.width / sz, canvas.height / sz);
+  if (st.style === 'trace') st = { ...st, trace: st.trace && { ...st.trace, tile: (st.trace.tile || 90) * .5 } };
   drawBasic(x, { x0: 0, y0: 0, x1: sz, y1: sz }, { ...st, gh: sz });
   x.restore();
 }

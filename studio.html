@@ -7,7 +7,7 @@
 <meta name="description" content="Desain jersey dengan generator pattern, lihat langsung di 3D, dan export pola jahit skala 1:1.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;1,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Anton&family=Bebas+Neue&family=Kanit:ital,wght@0,800;1,800&family=Big+Shoulders+Display:wght@900&family=Saira+Condensed:wght@800&family=Teko:wght@700&family=Oswald:wght@700&family=Russo+One&family=Squada+One&family=Staatliches&family=Fjalla+One&family=Passion+One:wght@900&family=Racing+Sans+One&family=Black+Ops+One&family=Chakra+Petch:wght@700&family=Orbitron:wght@800&family=Bungee&family=Graduate&family=Alfa+Slab+One&family=Bowlby+One&family=Changa+One&family=Archivo+Black&family=Rubik+Mono+One&family=Permanent+Marker&family=Bricolage+Grotesque:wght@800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;1,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Geist:wght@400;500&family=Inter:wght@400;500&family=Anton&family=Bebas+Neue&family=Kanit:ital,wght@0,800;1,800&family=Big+Shoulders+Display:wght@900&family=Saira+Condensed:wght@800&family=Teko:wght@700&family=Oswald:wght@700&family=Russo+One&family=Squada+One&family=Staatliches&family=Fjalla+One&family=Passion+One:wght@900&family=Racing+Sans+One&family=Black+Ops+One&family=Chakra+Petch:wght@700&family=Orbitron:wght@800&family=Bungee&family=Graduate&family=Alfa+Slab+One&family=Bowlby+One&family=Changa+One&family=Archivo+Black&family=Rubik+Mono+One&family=Permanent+Marker&family=Bricolage+Grotesque:wght@800&display=swap">
 </head>
 <body class="studio">
 <div class="boot" id="boot" role="status" aria-live="polite"><div class="boot-in"><div class="boot-logo"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="var(--accent)"/><path d="M20 14l-10 7 5 9 5-3v23h24V27l5 3 5-9-10-7h-6a6 6 0 0 1-12 0z" fill="var(--accent-ink)"/><path d="M26 30l6 8 6-8" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round"/></svg></div><h2>Jersey Pattern Lab</h2><div class="boot-bar"><i id="bootBar"></i></div><div class="boot-stitch"></div><p id="bootMsg">Menyiapkan Studio…</p></div></div>
@@ -74,6 +74,7 @@
       <button role="tab" type="button" data-tab="pattern" aria-selected="true">Pattern</button>
       <button role="tab" type="button" data-tab="edit" aria-selected="false" data-tour="tab-edit">Edit</button>
       <button role="tab" type="button" data-tab="elements" aria-selected="false" data-tour="tab-elements">Elemen</button>
+      <button role="tab" type="button" data-tab="trace" aria-selected="false" data-tour="tab-trace">Trace</button>
       <button role="tab" type="button" data-tab="view" aria-selected="false" data-tour="tab-view">Tampilan</button>
     </div>
 
@@ -82,7 +83,7 @@
       <section>
         <div class="seg wide" role="group" aria-label="Mode generator" data-tour="mode">
           <button type="button" data-mode="basic" aria-pressed="true">Basic</button>
-          <button type="button" data-mode="advanced" aria-pressed="false">Advanced <span class="pro">PRO</span></button>
+          <button type="button" data-mode="advanced" aria-pressed="false">Advanced <span class="pro">Pro</span></button>
         </div>
       </section>
       <div id="basicPanel">
@@ -177,6 +178,52 @@
           </div>
         </div>
       </section>
+    </div>
+
+    <!-- TRACE -->
+    <div class="tabpane" data-pane="trace" hidden>
+      <section>
+        <h3>Trace gambar ke vektor</h3>
+        <label class="drop" id="trDrop"><input type="file" accept="image/*" id="trFile" class="sr-only"><b>Pilih gambar</b><span>atau seret ke sini. PNG, JPG, WEBP, maksimal 8 MB</span></label>
+        <div class="trcmp" id="trCmp" hidden>
+          <figure><img id="trSrc" alt="Gambar asli"><figcaption>Asli</figcaption></figure>
+          <figure class="checker"><img id="trOut" alt="Hasil vektor"><figcaption>Vektor · <span id="trInfo"></span></figcaption></figure>
+        </div>
+      </section>
+      <div id="trCtl" hidden>
+        <section>
+          <h3>Preset</h3>
+          <div class="chips" id="trPresets"></div>
+        </section>
+        <section>
+          <h3>Pengaturan</h3>
+          <div class="seg wide" role="group" aria-label="Mode trace">
+            <button type="button" data-trmode="color" aria-pressed="true">Berwarna</button>
+            <button type="button" data-trmode="mono" aria-pressed="false">Satu warna</button>
+          </div>
+          <label class="field" id="trColorsRow">Jumlah warna <span class="v" id="vColors"></span><input type="range" id="trColors" min="2" max="10" step="1"></label>
+          <label class="field" id="trThrRow">Ambang terang/gelap <span class="v" id="vThr"></span><input type="range" id="trThr" min="0" max="240" step="5"></label>
+          <label class="field" id="trInkRow">Warna bentuk<input type="color" id="trInk" value="#111111"></label>
+          <label class="field">Detail <span class="v" id="vDetail"></span><input type="range" id="trDetail" min="120" max="520" step="20"></label>
+          <label class="field">Kehalusan tepi <span class="v" id="vSmooth"></span><input type="range" id="trSmooth" min="0" max="100" step="5"></label>
+          <label class="field">Buang bintik <span class="v" id="vSpeckle"></span><input type="range" id="trSpeckle" min="0" max="60" step="1"></label>
+          <label class="chk"><input type="checkbox" id="trDropBg" checked> Hapus latar putih atau transparan</label>
+          <label class="chk"><input type="checkbox" id="trInvert"> Balik terang dan gelap</label>
+          <label class="chk" id="trPalRow"><input type="checkbox" id="trPal"> Pakai warna palet jersey</label>
+        </section>
+        <section id="trAct">
+          <h3>Pakai hasilnya</h3>
+          <button class="btn primary" type="button" id="trAddLayer" disabled>Tambah sebagai logo di dada</button>
+          <button class="btn" type="button" id="trMotif" disabled>Jadikan motif jersey</button>
+          <button class="btn sm" type="button" id="trDownload" disabled>Unduh SVG</button>
+          <div id="trMotifOpts" hidden>
+            <label class="field">Ukuran ulangan <span class="v" id="vTile">90 mm</span><input type="range" id="trTile" min="30" max="220" step="5" value="90"></label>
+            <label class="field">Jarak antar bentuk <span class="v" id="vGap">12%</span><input type="range" id="trGap" min="0" max="60" step="2" value="12"></label>
+            <label class="chk"><input type="checkbox" id="trHalf" checked> Susun selang-seling</label>
+          </div>
+          <p class="hint">Motif memakai warna dasar dari palet di tab Pattern. Edit pattern (skala, rotasi, geser) tetap berlaku.</p>
+        </section>
+      </div>
     </div>
 
     <!-- TAMPILAN -->

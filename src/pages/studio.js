@@ -1,5 +1,7 @@
 import '../styles/base.css';
 import '../styles/studio.css';
+import '../styles/arc.css';
+import { initArc } from '../studio/arc-ui.js';
 import { sb, isPro } from '../lib/supabase.js';
 import { mountNav } from '../lib/nav.js';
 import { $, $$, E, toast, modal, download, withProgress, shrinkImage } from '../lib/ui.js';
@@ -10,6 +12,7 @@ import { Viewer3D } from '../studio/viewer3d.js';
 import { Editor2D } from '../studio/editor2d.js';
 import { exportPattern, exportSewingSVG, exportSewingPNG } from '../studio/exporter.js';
 import { startTour, tourSeen } from '../studio/tour.js';
+import { initTrace } from '../studio/trace-ui.js';
 import DEFAULT_PANELS from '../studio/default-panels.json';
 
 const fmt = (n, d = 1) => (+n).toFixed(d).replace('.', ',');
@@ -25,7 +28,7 @@ const S = {
   edit: { scale: 1, rot: 0, offX: 0, offY: 0, flip: false, seam: true, repeats: 2 },
   panelFill: {}, ribColor: '#f2b705',
   layers: [],
-  fabric: { knit: 5.5, normal: .5, sheen: .45 },
+  fabric: { knit: 2.7, normal: .25, sheen: .25 },
   bg: { mode: 'studio', color: '#ffffff' }, shadow: true,
 };
 let me = null, pro = false, L = null, model = null, models = [], adv = null, advPending = null;
@@ -145,10 +148,7 @@ function newText(role, o) {
 }
 function defaultLayers() {
   S.layers = [];
-  newText('back', { text: '09', size: 250, ly: p => p.h * .46 });
-  newText('back', { text: 'SETIAWAN', size: 58, ly: p => p.h * .2 });
-  newText('front', { text: 'GARUDA FC', size: 58, ly: p => p.h * .3 });
-  newText('front', { text: '09', size: 110, ly: p => p.h * .46 });
+  newText('front', { text: 'JAPAN', size: 62, ly: p => p.h * .3 }); // tanpa angka, belakang kosong
   contrastText();
 }
 const lum = hex => { const n = parseInt(hex.slice(1), 16); return (.2126 * (n >> 16) + .7152 * (n >> 8 & 255) + .0722 * (n & 255)) / 255; };
@@ -366,15 +366,33 @@ for (const [id, f] of [['knit', v => fmt(v) + ' mm'], ['normal', v => fmt(v, 2)]
   $('#' + id).oninput = e => { S.fabric[id] = +e.target.value; $('#v' + id[0].toUpperCase() + id.slice(1)).textContent = f(S.fabric[id]); viewer.applyFabric(S.fabric); markDirty(); };
 }
 
+/* ---------------- Trace (vectorize) ---------------- */
+function addImageSrc(src, name, role, o) {
+  const p = panelByRole(role), img = new Image();
+  img.onload = () => {
+    const Ly = { id: 'l' + (layerSeq++), type: 'image', panel: p.id, _role: role, src, img, name, rot: 0, opacity: 1, ...o, lx: o.lx(p), ly: o.ly(p) };
+    S.layers.push(Ly); selId = Ly.id; syncLayers(); invalidateLayers(); setTab('elements'); toast('Logo vektor ditambahkan. Seret di pola 2D untuk memindahkan.');
+  };
+  img.src = src;
+}
+const trace = initTrace({
+  getPalette: () => S.basic.colors,
+  isMotifActive: () => S.basic.style === 'trace',
+  onAddLayer: (src, name) => addImageSrc(src, name, 'front', { w: 90, lx: p => p.w / 2, ly: p => p.h * .5 }),
+  onMotif: T => { S.basic.trace = T; S.basic.style = 'trace'; if (S.mode !== 'basic') setMode('basic'); syncBasic(); invalidateBase(); },
+  onDownload: (svg, name) => { if (!pro) { exportUpsell(); return; } download(new Blob([svg], { type: 'image/svg+xml' }), `jpl-trace-${name}.svg`); },
+});
+
 /* ---------------- simpan / muat ---------------- */
 function serialize() {
   return {
-    pattern_config: { v: 2, mode: S.mode, basic: S.basic, edit: S.edit, adv: adv ? adv.getState() : advPending },
+    pattern_config: { v: 2, mode: S.mode, basic: { ...S.basic, trace: S.basic.trace ? { src: S.basic.trace.src, tile: S.basic.trace.tile, gap: S.basic.trace.gap, half: S.basic.trace.half } : undefined }, edit: S.edit, adv: adv ? adv.getState() : advPending },
     editor_state: { v: 2, model: model?.slug, panelFill: S.panelFill, ribColor: S.ribColor, fabric: S.fabric, bg: S.bg, shadow: S.shadow, layers: S.layers.map(({ img, _w, _h, ...r }) => r) },
   };
 }
 async function deserialize(pc = {}, es = {}) {
   if (pc.basic) S.basic = { ...S.basic, ...pc.basic };
+  if (S.basic.trace && S.basic.trace.src) { const T = S.basic.trace; T.img = new Image(); await new Promise(r => { T.img.onload = T.img.onerror = r; T.img.src = T.src; }); trace.syncMotif(T); } else { S.basic.trace = undefined; trace.syncMotif(null); }
   if (pc.edit) S.edit = { ...S.edit, ...pc.edit };
   Object.assign(S, { panelFill: es.panelFill || {}, ribColor: es.ribColor || S.ribColor, fabric: { ...S.fabric, ...(es.fabric || {}) }, bg: { ...S.bg, ...(es.bg || {}) }, shadow: es.shadow !== false });
   S.layers = (es.layers || []).map(l => ({ ...l }));
@@ -528,6 +546,7 @@ $('#btnTour').onclick = () => startTour(undefined, { onTab: t => setTab(t === 'v
 const boot = (p, msg) => { const b = $('#bootBar'); if (b) b.style.width = Math.round(p * 100) + '%'; if (msg) $('#bootMsg').textContent = msg; };
 const bootDone = () => { boot(1, 'Siap'); setTimeout(() => { $('#boot').classList.add('done'); setTimeout(() => $('#boot').remove(), 400); }, 180); };
 requestAnimationFrame(frame);
+initArc();
 (async () => {
   boot(.15, 'Memeriksa akun…');
   me = await mountNav('studio', { tag: 'STUDIO' });
