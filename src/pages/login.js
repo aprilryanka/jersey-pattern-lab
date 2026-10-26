@@ -3,22 +3,13 @@ import '../styles/auth.css';
 import { sb } from '../lib/supabase.js';
 import { mountNav } from '../lib/nav.js';
 import { $ } from '../lib/ui.js';
-import { drawBasic } from '../studio/basic.js';
 
 const params = new URLSearchParams(location.search);
 const next = (params.get('next') || '/studio').startsWith('/') ? params.get('next') || '/studio' : '/studio';
 let mode = params.get('mode') === 'signup' ? 'signup' : 'login';
 if (/type=recovery/.test(location.hash)) mode = 'reset';
 
-// latar: motif shards dari generator Basic
-function paintBg() {
-  const c = $('#bg'), d = Math.min(devicePixelRatio || 1, 2);
-  c.width = innerWidth * d; c.height = innerHeight * d;
-  const x = c.getContext('2d'), mm = Math.max(innerWidth, innerHeight) / 1.4;
-  x.setTransform(d * innerWidth / mm, 0, 0, d * innerWidth / mm, 0, 0);
-  drawBasic(x, { x0: -20, y0: -20, x1: mm + 20, y1: mm * innerHeight / innerWidth + 20 }, { style: 'shards', colors: ['#0a7b75', '#063c3a', '#e6b422'], seed: 7, scale: 1.6, gh: mm });
-}
-paintBg(); addEventListener('resize', paintBg);
+
 
 function setMode(m) {
   mode = m;

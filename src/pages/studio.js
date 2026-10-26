@@ -3,7 +3,7 @@ import '../styles/studio.css';
 import { sb, isPro } from '../lib/supabase.js';
 import { mountNav } from '../lib/nav.js';
 import { $, $$, E, toast, modal, download, withProgress, shrinkImage } from '../lib/ui.js';
-import { BASIC_STYLES, BASIC_PALETTES, drawBasicThumb } from '../studio/basic.js';
+import { BASIC_STYLES, BASIC_PALETTES, drawBasicThumb, drawBasic } from '../studio/basic.js';
 import { initAdvanced } from '../studio/advanced.js';
 import { layoutModel, renderAtlas, renderLayers, FONTS } from '../studio/atlas.js';
 import { Viewer3D } from '../studio/viewer3d.js';
@@ -14,7 +14,8 @@ import DEFAULT_PANELS from '../studio/default-panels.json';
 
 const fmt = (n, d = 1) => (+n).toFixed(d).replace('.', ',');
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
-const TEX_PX = 3072;
+const PHONE = matchMedia('(max-width: 760px)').matches;
+const TEX_PX = PHONE ? 2048 : 3072; // tekstur lebih kecil di HP agar ringan
 const DEFAULT_MODEL = { id: null, name: 'Jersey Basic V-Neck', slug: 'jersey-basic-v-neck', size_label: 'M', glb_url: '/models/jersey-basic-v-neck.glb', panels: DEFAULT_PANELS };
 
 /* ---------------- state ---------------- */
@@ -33,18 +34,57 @@ let base, bctx, atlas, actx, sc = 1;
 
 /* ---------------- render pipeline ---------------- */
 let needBase = true, needLayers = true;
-const invalidateBase = () => { needBase = true; needLayers = true; markDirty(); };
+const invalidateBase = () => { needBase = true; needLayers = true; patDirty = true; markDirty(); };
 const invalidateLayers = () => { needLayers = true; markDirty(); };
+let layout = 'split', patDirty = true, patRep = 2;
+const show3D = () => layout === 'split' || layout === '3d';
+const show2D = () => layout === 'split' || layout === '2d';
 function frame() {
   requestAnimationFrame(frame);
   if (!L || !base) return;
+  if (layout === 'pattern') { if (patDirty) { patDirty = false; drawPatternPane(); } return; } // atlas & 3D tidak dirender
   if (needBase) { renderAtlas(bctx, L, S, adv, sc, { layers: false }); needBase = false; }
   if (needLayers) {
     actx.setTransform(1, 0, 0, 1, 0, 0); actx.drawImage(base, 0, 0);
     renderLayers(actx, L, S, sc);
-    viewer.setTexture(atlas); editor.invalidate(); needLayers = false;
+    if (show3D()) viewer.setTexture(atlas);
+    editor.invalidate(); needLayers = false;
   }
 }
+
+/** Pastikan tekstur 3D terbaru (dipakai sebelum snapshot saat pane 3D sedang disembunyikan). */
+function flushTexture() {
+  if (!L || !base) return;
+  if (needBase) { renderAtlas(bctx, L, S, adv, sc, { layers: false }); needBase = false; }
+  actx.setTransform(1, 0, 0, 1, 0, 0); actx.drawImage(base, 0, 0); renderLayers(actx, L, S, sc);
+  viewer.setTexture(atlas); needLayers = !show2D() ? false : needLayers;
+}
+
+/* ---------------- pane Pattern (paling ringan: hanya motif) ---------------- */
+function drawPatternPane() {
+  const c = $('#cpat'), r = c.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2);
+  if (!r.width) return;
+  c.width = Math.round(r.width * d); c.height = Math.round(r.height * d);
+  const ctx = c.getContext('2d'), side = Math.min(r.width, r.height) - 32, x0 = (r.width - side) / 2, y0 = (r.height - side) / 2;
+  ctx.setTransform(d, 0, 0, d, 0, 0);
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--stage'); ctx.fillRect(0, 0, r.width, r.height);
+  ctx.save(); ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x0, y0, side, side, 14) : ctx.rect(x0, y0, side, side); ctx.clip();
+  if (S.mode === 'advanced' && adv) {
+    const t = side / patRep;
+    for (let i = 0; i < patRep; i++) for (let j = 0; j < patRep; j++) ctx.drawImage(adv.pat, x0 + i * t, y0 + j * t, t, t);
+    $('#patInfo').textContent = 'Tile Advanced · bisa diulang tanpa sambungan';
+  } else {
+    const mm = 300 * patRep, k = side / mm;
+    ctx.translate(x0, y0); ctx.scale(k, k);
+    ctx.translate(mm / 2, mm / 2); ctx.rotate((S.edit.rot || 0) * Math.PI / 180); ctx.scale((S.edit.scale || 1) * (S.edit.flip ? -1 : 1), S.edit.scale || 1); ctx.translate(-mm / 2, -mm / 2);
+    const pad = mm;
+    drawBasic(ctx, { x0: -pad, y0: -pad, x1: mm + pad, y1: mm + pad }, { ...S.basic, gh: mm });
+    $('#patInfo').textContent = `Area ${mm / 10} × ${mm / 10} cm`;
+  }
+  ctx.restore();
+}
+$$('[data-rep]').forEach(b => b.onclick = () => { patRep = +b.dataset.rep; $$('[data-rep]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); patDirty = true; });
+new ResizeObserver(() => { patDirty = true; }).observe($('#panePat'));
 
 /* ---------------- 3D + 2D ---------------- */
 const viewer = new Viewer3D($('#c3d'));
@@ -123,11 +163,20 @@ function setTab(name) {
   $$('.tabpane').forEach(p => p.hidden = p.dataset.pane !== name);
 }
 $$('.tabs [data-tab]').forEach(b => b.onclick = () => setTab(b.dataset.tab));
-$$('[data-layout]').forEach(b => b.onclick = () => {
-  $('#main').dataset.layout = b.dataset.layout;
-  $$('[data-layout]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-  requestAnimationFrame(() => { editor.resize(); editor.fit(true); viewer.resize(); });
-});
+function setLayout(name) {
+  layout = name;
+  $('#main').dataset.layout = name;
+  $$('[data-layout]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.layout === name)));
+  viewer.paused = !show3D(); editor.hidden = !show2D();
+  needLayers = true; patDirty = true;
+  try { localStorage.setItem('jpl_layout', name); } catch (e) { }
+  requestAnimationFrame(() => { if (show2D()) { editor.resize(); editor.fit(true); } if (show3D()) viewer.resize(); });
+}
+$$('[data-layout]').forEach(b => b.onclick = () => setLayout(b.dataset.layout));
+{ // HP: default satu tampilan (Pola 2D) agar ringan; pilihan terakhir diingat
+  let saved = null; try { saved = localStorage.getItem('jpl_layout'); } catch (e) { }
+  setLayout(['split', '2d', '3d', 'pattern'].includes(saved) ? saved : PHONE ? '2d' : 'split');
+}
 $$('[data-unit]').forEach(b => b.onclick = () => { units = b.dataset.unit; $$('[data-unit]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); editor.invalidate(); });
 $$('[data-cam]').forEach(b => b.onclick = () => { viewer.setView(b.dataset.cam); $$('[data-cam]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); });
 $('#spin').onclick = e => { viewer.controls.autoRotate = !viewer.controls.autoRotate; e.currentTarget.setAttribute('aria-pressed', String(viewer.controls.autoRotate)); };
@@ -344,6 +393,7 @@ let draftT = 0;
 function scheduleDraft() { clearTimeout(draftT); draftT = setTimeout(() => { try { localStorage.setItem('jpl_draft', JSON.stringify({ name: $('#projName').value, id: projectId, ...serialize() })); } catch (e) { } }, 1200); }
 
 async function snapshotBlob(size = 480) {
+  flushTexture();
   const c = await viewer.snapshot({ width: size, height: size, bg: S.bg.mode === 'transparent' ? { mode: 'studio' } : S.bg, views: ['front'] });
   return new Promise(r => c.toBlob(r, 'image/jpeg', .85));
 }
@@ -455,6 +505,7 @@ $('#btnExport').onclick = () => {
     m.close();
     const size = +tSize.value, v = tView.value;
     const views = v === 'current' ? null : v === 'three' ? ['front', 'back', 'side'] : [v];
+    flushTexture();
     const c = await withProgress('Merender snapshot 3D', async set => { set(.4); return viewer.snapshot({ width: size, height: size, bg: S.bg, views }); });
     c.toBlob(b => download(b, `jpl-3d-${v}-${size}px.png`), 'image/png');
   };
@@ -474,15 +525,21 @@ function protectImages() {
 $('#btnTour').onclick = () => startTour(undefined, { onTab: t => setTab(t === 'view' ? 'view' : t) });
 
 /* ---------------- boot ---------------- */
+const boot = (p, msg) => { const b = $('#bootBar'); if (b) b.style.width = Math.round(p * 100) + '%'; if (msg) $('#bootMsg').textContent = msg; };
+const bootDone = () => { boot(1, 'Siap'); setTimeout(() => { $('#boot').classList.add('done'); setTimeout(() => $('#boot').remove(), 400); }, 180); };
 requestAnimationFrame(frame);
 (async () => {
+  boot(.15, 'Memeriksa akun…');
   me = await mountNav('studio', { tag: 'STUDIO' });
   pro = isPro(me) || (import.meta.env.DEV && location.search.includes('devpro'));
   protectImages();
   syncBasic(); syncEdit(); syncView();
+  boot(.35, 'Memuat daftar model…');
   await loadModels();
   const startModel = models[0];
+  boot(.55, 'Memuat model 3D…');
   await useModel(startModel, false);
+  boot(.85, 'Menggambar pola…');
   const fontsReady = Promise.all(FONTS.slice(0, 6).map(f => document.fonts.load(`80px "${f[1]}"`).catch(() => { }))).then(invalidateLayers);
   const pid = new URLSearchParams(location.search).get('p');
   if (pid && me) await openProject(pid);
@@ -492,6 +549,8 @@ requestAnimationFrame(frame);
       if (d && d.editor_state) { $('#projName').value = d.name || 'Desain tanpa judul'; projectId = me ? d.id || null : null; await deserialize(d.pattern_config, d.editor_state); $('#saveState').textContent = 'Draft dipulihkan'; }
     } catch (e) { }
   }
-  await fontsReady;
+  await Promise.race([fontsReady, new Promise(r => setTimeout(r, 2500))]);
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  bootDone();
   if (!tourSeen()) setTimeout(() => startTour(undefined, { onTab: setTab }), 900);
 })();

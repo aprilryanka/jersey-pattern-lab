@@ -27,7 +27,11 @@ select.in.sm { padding: 4px 8px; border-radius: 999px; width: auto; max-width: 1
 #main { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr) 340px; min-height: 0; }
 #main[data-layout="2d"] { grid-template-columns: minmax(0, 1fr) 0 340px; }
 #main[data-layout="3d"] { grid-template-columns: 0 minmax(0, 1fr) 340px; }
-#main[data-layout="2d"] #pane3d, #main[data-layout="3d"] #pane2d { display: none; }
+#main[data-layout="pattern"] { grid-template-columns: minmax(0, 1fr) 340px; }
+#main[data-layout="2d"] #pane3d, #main[data-layout="3d"] #pane2d, #main[data-layout="pattern"] #pane2d, #main[data-layout="pattern"] #pane3d { display: none; }
+#panePat { display: none; }
+#main[data-layout="pattern"] #panePat { display: flex; }
+#cpat { position: absolute; inset: 0; width: 100%; height: 100%; display: block; background: var(--stage); }
 .pane { display: flex; flex-direction: column; min-width: 0; min-height: 0; border-right: 1px solid var(--line); }
 .phead { display: flex; align-items: center; gap: 8px; padding: 7px 12px; flex-wrap: wrap; background: var(--panel); border-bottom: 1px solid var(--line); min-height: 46px; }
 .phead h2 { margin: 0; font: 700 15px/1 var(--f-display); letter-spacing: .09em; text-transform: uppercase; }
@@ -158,7 +162,6 @@ input[type=color] { width: 100%; height: 32px; padding: 2px; border: 1px solid v
   body.studio { overflow: auto; height: auto; display: block; }
   html { height: auto; }
   #main, #main[data-layout] { grid-template-columns: 1fr; }
-  #main[data-layout="2d"] #pane3d, #main[data-layout="3d"] #pane2d { display: none; }
   .pane { border-right: 0; border-bottom: 1px solid var(--line); }
   .stage { flex: none; height: min(78vw, 480px); }
   .side { min-height: 0; }
@@ -166,7 +169,8 @@ input[type=color] { width: 100%; height: 32px; padding: 2px; border: 1px solid v
   .tabpane { overflow: visible; }
 }
 @media (max-width: 560px) {
-  .studio-bar .seg { display: none; }
+  .studio-bar .layout-seg { display: flex; width: 100%; order: 10; }
+  .studio-bar .layout-seg button { flex: 1; }
   .proj-name { width: 100%; order: -1; }
 }
 .upsell { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
@@ -174,3 +178,15 @@ input[type=color] { width: 100%; height: 32px; padding: 2px; border: 1px solid v
 .upsell li::before { content: "✓"; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
 /* akun gratis: cegah tekan-lama simpan gambar (iOS/Android) */
 body.protect canvas, body.protect .styles, body.protect .adv { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+
+/* ---------- motion ---------- */
+.tabpane:not([hidden]) { animation: tab-in .25s ease both; }
+@keyframes tab-in { from { opacity: 0; transform: translateY(6px); } }
+.styles button { transition: transform .18s ease, border-color .2s; }
+.styles button:hover { transform: translateY(-2px); }
+.styles button[aria-pressed="true"] canvas { animation: pick .35s cubic-bezier(.2, .9, .3, 1.4); }
+@keyframes pick { from { transform: scale(.9); } }
+.seg button { transition: background-color .2s, color .2s; }
+.layers button, .pf { transition: border-color .2s, background-color .2s; }
+.live::before { animation: live 1.8s ease-in-out infinite; }
+@keyframes live { 50% { opacity: .35; } }

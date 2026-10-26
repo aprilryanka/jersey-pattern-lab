@@ -10,14 +10,16 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;1,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Anton&family=Bebas+Neue&family=Kanit:ital,wght@0,800;1,800&family=Big+Shoulders+Display:wght@900&family=Saira+Condensed:wght@800&family=Teko:wght@700&family=Oswald:wght@700&family=Russo+One&family=Squada+One&family=Staatliches&family=Fjalla+One&family=Passion+One:wght@900&family=Racing+Sans+One&family=Black+Ops+One&family=Chakra+Petch:wght@700&family=Orbitron:wght@800&family=Bungee&family=Graduate&family=Alfa+Slab+One&family=Bowlby+One&family=Changa+One&family=Archivo+Black&family=Rubik+Mono+One&family=Permanent+Marker&family=Bricolage+Grotesque:wght@800&display=swap">
 </head>
 <body class="studio">
+<div class="boot" id="boot" role="status" aria-live="polite"><div class="boot-in"><div class="boot-logo"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="var(--accent)"/><path d="M20 14l-10 7 5 9 5-3v23h24V27l5 3 5-9-10-7h-6a6 6 0 0 1-12 0z" fill="var(--accent-ink)"/><path d="M26 30l6 8 6-8" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round"/></svg></div><h2>Jersey Pattern Lab</h2><div class="boot-bar"><i id="bootBar"></i></div><div class="boot-stitch"></div><p id="bootMsg">Menyiapkan Studio…</p></div></div>
 <div class="studio-bar">
   <input id="projName" class="proj-name" value="Desain tanpa judul" aria-label="Nama project" maxlength="60">
   <span class="save-state" id="saveState"></span>
   <span class="sp"></span>
-  <div class="seg" role="group" aria-label="Tata letak">
+  <div class="seg layout-seg" role="group" aria-label="Tampilan" data-tour="layout">
     <button type="button" data-layout="split" aria-pressed="true">Split</button>
     <button type="button" data-layout="2d" aria-pressed="false">Pola</button>
     <button type="button" data-layout="3d" aria-pressed="false">3D</button>
+    <button type="button" data-layout="pattern" aria-pressed="false">Pattern</button>
   </div>
   <button class="btn sm" type="button" id="btnProjects">Project saya</button>
   <button class="btn sm" type="button" id="btnSave" data-tour="save">Simpan</button>
@@ -55,6 +57,16 @@
       <div class="overlay" id="ov3d">Memuat model 3D…</div>
       <span class="live">Live preview</span>
     </div>
+  </section>
+
+  <section class="pane" id="panePat" aria-label="Pratinjau pattern">
+    <div class="phead"><h2>Pattern</h2><span class="hint" id="patInfo"></span><span class="sp"></span>
+      <div class="seg" role="group" aria-label="Ulangan pratinjau">
+        <button type="button" data-rep="1" aria-pressed="false">1×</button>
+        <button type="button" data-rep="2" aria-pressed="true">2×2</button>
+      </div>
+    </div>
+    <div class="stage"><canvas id="cpat" aria-label="Pratinjau pattern"></canvas></div>
   </section>
 
   <aside class="side" aria-label="Kontrol desain">

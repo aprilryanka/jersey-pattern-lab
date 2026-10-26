@@ -59,7 +59,7 @@ export class Viewer3D {
   constructor(canvas, { autoRotate = false, interactive = true } = {}) {
     this.canvas = canvas;
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, matchMedia('(max-width: 760px)').matches ? 1.5 : 2));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.05;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.setClearColor(0x000000, 0);
@@ -144,7 +144,7 @@ export class Viewer3D {
 
   _loop() {
     requestAnimationFrame(this._loop);
-    if (document.hidden) return;
+    if (document.hidden || this.paused) return;
     const off = this.camera.position.clone().sub(this.target);
     if (this.camGoal) {
       const goal = this.camGoal.clone().sub(this.target);

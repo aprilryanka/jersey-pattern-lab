@@ -59,6 +59,7 @@ export class Editor2D {
 
   _tick() {
     requestAnimationFrame(this._tick);
+    if (this.hidden) return;
     if (this.goal) {
       const g = this.goal, V = this.V, a = .22;
       V.k += (g.k - V.k) * a; V.ox += (g.ox - V.ox) * a; V.oy += (g.oy - V.oy) * a;

@@ -41,7 +41,9 @@ body.landing { overflow-x: hidden; }
 @media (max-width: 760px) { .steps ol { grid-template-columns: 1fr; } .steps li { padding-bottom: 12px; border-bottom: 1px solid var(--line); } }
 
 /* harga */
-.plans { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; max-width: 860px; }
+.pricing { text-align: center; }
+.pricing h2 { margin-inline: auto; }
+.plans { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; max-width: 860px; margin-inline: auto; text-align: left; }
 .plan { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-l); padding: 26px; display: grid; gap: 14px; align-content: start; }
 .plan.pro { border: 2px solid var(--accent); position: relative; }
 .plan.pro::after { content: "Paling dipilih"; position: absolute; top: -12px; right: 20px; font: 600 11px/1 var(--f-mono); background: var(--accent); color: var(--accent-ink); padding: 5px 9px; border-radius: 999px; }
@@ -61,7 +63,6 @@ body.landing { overflow-x: hidden; }
 .cta-band p { margin: 0; font-size: 17px; opacity: .9; max-width: 56ch; }
 .cta-btn { background: #fff; color: #063c3a; border-color: #fff; font-weight: 700; font-size: 17px; padding: 15px 30px; }
 .cta-btn:hover { border-color: #fff; filter: brightness(.96); }
-.wa-num { font: 400 13px var(--f-mono) !important; opacity: .8 !important; user-select: all; }
 
 /* testimoni */
 .tgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
@@ -93,3 +94,40 @@ body.landing { overflow-x: hidden; }
 .foot nav a { color: var(--muted); text-decoration: none; font-size: 13px; }
 .foot nav a:hover { color: var(--ink); }
 .foot small { color: var(--muted); font: 400 12px var(--f-mono); }
+
+/* ---------- motion ---------- */
+.hero-copy > * { animation: rise .8s cubic-bezier(.2, .8, .2, 1) both; }
+.hero-copy > :nth-child(1) { animation-delay: .05s; }
+.hero-copy > :nth-child(2) { animation-delay: .12s; }
+.hero-copy > :nth-child(3) { animation-delay: .22s; }
+.hero-copy > :nth-child(4) { animation-delay: .32s; }
+.hero-art { animation: rise 1s .15s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes rise { from { opacity: .15; transform: translateY(26px); } }
+.j-front { animation: float-a 6s ease-in-out infinite; }
+.j-back { animation: float-b 7s ease-in-out infinite; }
+@keyframes float-a { 0%, 100% { transform: rotate(-3deg) translateY(0); } 50% { transform: rotate(-1.5deg) translateY(-12px); } }
+@keyframes float-b { 0%, 100% { transform: rotate(4deg) translateY(0); } 50% { transform: rotate(5.5deg) translateY(-8px); } }
+.hero-art figcaption span { animation: rise .7s cubic-bezier(.2, .8, .2, 1) both; }
+.hero-art figcaption span:nth-child(1) { animation-delay: .6s; }
+.hero-art figcaption span:nth-child(2) { animation-delay: .7s; }
+.hero-art figcaption span:nth-child(3) { animation-delay: .8s; }
+/* reveal saat scroll: konten tetap terlihat (opasitas tidak pernah 0) */
+html.rv [data-reveal] { opacity: .25; transform: translateY(28px); transition: opacity .7s ease, transform .7s cubic-bezier(.2, .8, .2, 1); transition-delay: var(--d, 0s); }
+html.rv [data-reveal].in { opacity: 1; transform: none; }
+.fgrid article, .plan, .tcard { transition: transform .25s ease, box-shadow .25s ease, border-color .25s, opacity .7s ease; }
+.fgrid article:hover, .plan:hover, .tcard:hover { transform: translateY(-4px); box-shadow: 0 18px 40px -24px rgba(10, 40, 37, .45); }
+.fgrid article:hover .ico { transform: rotate(-10deg) scale(1.08); }
+.ico { transition: transform .3s cubic-bezier(.2, .9, .3, 1.4); }
+.steps ol { position: relative; }
+.steps ol::before { content: ""; position: absolute; left: 0; top: -2px; height: 2px; width: 0; background: var(--accent); transition: width 1.4s cubic-bezier(.2, .8, .2, 1) .2s; }
+.steps ol.in::before { width: 100%; }
+.cta-band { background-size: 220% 220%; animation: band 14s ease-in-out infinite; }
+.cta-band::before { animation: stripes 24s linear infinite; }
+@keyframes band { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+@keyframes stripes { to { background-position: 400px 0; } }
+.cta-btn { animation: nudge 3.2s ease-in-out 1.5s infinite; }
+@keyframes nudge { 0%, 86%, 100% { transform: none; } 90% { transform: translateY(-3px); } 94% { transform: translateY(0); } 97% { transform: translateY(-1px); } }
+.acc details[open] .ans { animation: rise .35s ease both; }
+.acc summary { transition: color .2s; }
+.acc summary:hover { color: var(--accent); }
+html.rv .fgrid article.in:hover, html.rv .plan.in:hover, html.rv .tcard.in:hover { transform: translateY(-4px); }

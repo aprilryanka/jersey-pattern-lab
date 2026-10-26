@@ -7,6 +7,26 @@ export const LOGO_SVG = '<svg viewBox="0 0 64 64" aria-hidden="true"><rect width
  * Navbar pill mengambang di tengah atas.
  * @param {string} current  id halaman aktif: home | studio | billing | admin
  */
+/** Markup loading screen, dipakai saat pindah ke Studio dan saat Studio memuat. */
+export function bootLoader(text = 'Menyiapkan Studio…') {
+  const el = document.createElement('div');
+  el.className = 'boot'; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
+  el.innerHTML = `<div class="boot-in"><div class="boot-logo">${LOGO_SVG}</div><h2>Jersey Pattern Lab</h2><div class="boot-bar"><i></i></div><div class="boot-stitch"></div><p></p></div>`;
+  el.querySelector('p').textContent = text;
+  return el;
+}
+
+// Tampilkan loading screen seketika saat menuju Studio (halaman berat), agar tidak terasa diam.
+document.addEventListener('click', e => {
+  const a = e.target.closest && e.target.closest('a[href]');
+  if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || a.target === '_blank') return;
+  const u = new URL(a.href, location.href);
+  if (u.origin !== location.origin || !/\/studio(\.html)?$/.test(u.pathname) || /\/studio(\.html)?$/.test(location.pathname)) return;
+  const b = bootLoader('Membuka Studio…'); document.body.append(b);
+  requestAnimationFrame(() => { b.querySelector('.boot-bar i').style.width = '35%'; });
+});
+addEventListener('pageshow', e => { if (e.persisted) document.querySelectorAll('body > .boot').forEach(b => b.remove()); });
+
 export async function mountNav(current, { tag } = {}) {
   const me = await getMe().catch(() => null);
   const plan = planOf(me);
