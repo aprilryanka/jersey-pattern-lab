@@ -9,7 +9,11 @@ function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; le
 
 /** Muat GLB & ukur UV mentah. UV CLO3D: u = x DXF (mm), v = -y DXF. */
 export async function loadGarment(url) {
-  const gltf = await new GLTFLoader().loadAsync(url);
+  let gltf;
+  if (url.startsWith('data:')) { // model tersemat (dipakai pratinjau tanpa server file)
+    const bin = Uint8Array.from(atob(url.slice(url.indexOf(',') + 1)), c => c.charCodeAt(0));
+    gltf = await new GLTFLoader().parseAsync(bin.buffer, '');
+  } else gltf = await new GLTFLoader().loadAsync(url);
   const meshes = [];
   gltf.scene.traverse(o => { if (o.isMesh) meshes.push(o); });
   if (!meshes.length) throw new Error('GLB tidak berisi mesh.');

@@ -139,8 +139,9 @@ function setMode(mode) {
   $('#basicPanel').hidden = mode !== 'basic'; $('#advPanel').hidden = mode !== 'advanced';
   if (mode === 'advanced') {
     ensureAdv();
-    $('#advLock').hidden = pro; $('#advHost').classList.toggle('locked', !pro);
-    if (!pro) { toast('Mode Advanced khusus member Pro'); return; }
+    const ok = pro || !!import.meta.env.VITE_PREVIEW;
+    $('#advLock').hidden = ok; $('#advHost').classList.toggle('locked', !ok);
+    if (!ok) { toast('Mode Advanced khusus member Pro'); return; }
   }
   S.mode = mode; $('#repWrap').hidden = mode !== 'advanced';
   invalidateBase();
@@ -335,7 +336,7 @@ async function deserialize(pc = {}, es = {}) {
   const m = models.find(x => x.slug === es.model);
   if (m && m !== model) { $('#modelSel').value = models.indexOf(m); await useModel(m, true); }
   syncBasic(); syncEdit(); syncView(); buildPanelFills(); syncLayers();
-  setMode(pc.mode === 'advanced' && pro ? 'advanced' : 'basic');
+  setMode(pc.mode === 'advanced' && (pro || import.meta.env.VITE_PREVIEW) ? 'advanced' : 'basic');
   invalidateBase();
 }
 function markDirty() { dirtySince = Date.now(); $('#saveState').textContent = projectId ? 'Ada perubahan' : 'Belum disimpan'; scheduleDraft(); }
