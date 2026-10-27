@@ -253,5 +253,7 @@ export function initAdvanced(container, { onChange = () => { } } = {}) {
     /** Pastikan tile resolusi tinggi untuk tekstur / export. Kembalikan ke 560 sesudahnya bila restore=true. */
     ensure(sz) { if (R !== sz) build(sz); },
     preview() { if (R !== 560) build(560); draw(); },
+    /** Terapkan state lalu bangun tile secara sinkron (dipakai landing page). */
+    render(state, sz) { setSnap(state); ui(); build(sz); return pat; },
   };
 }
