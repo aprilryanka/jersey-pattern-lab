@@ -91,6 +91,8 @@ body.studio .ibtn[aria-pressed="true"] { background: var(--surface-raised); colo
 
 /* tabs dengan indikator geser */
 body.studio .tabs { position: relative; border-bottom: 1px solid var(--border); padding: 0 6px; }
+/* mobile: tab bar menempel di bawah navbar. Harus sticky — kalau relative, `top` malah menggeser tab menimpa konten */
+@media (max-width: 1100px) { body.studio .tabs { position: sticky; } }
 body.studio .tabs button { position: relative; z-index: 1; font-size: 13px; padding: 13px 2px; color: var(--text-secondary); border-bottom: 0; transition: color .15s; }
 body.studio .tabs button[aria-selected="true"] { color: var(--foreground); }
 body.studio .tabs .hl { background: transparent; box-shadow: none; border-radius: 0; height: 2px !important; top: auto; bottom: -1px; }
