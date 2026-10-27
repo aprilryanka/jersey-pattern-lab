@@ -72,7 +72,7 @@ let io = null;
 function reveal() {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
   io = io || new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
-  const groups = ['.landing section:not(.hero) > h2', '.fgrid article', '.steps ol', '.steps li', '.plan', '.cta-inner > *', '.tcard', '.acc details'];
+  const groups = ['.landing section:not(.stage) > h2', '.steps ol', '.steps li', '.plan', '.cta-inner > *', '.tcard', '.acc details'];
   document.querySelectorAll(groups.join(',')).forEach(el => {
     if (el.dataset.reveal != null) return;
     const sib = [...el.parentElement.children].filter(c => c.matches(groups.join(',')));
@@ -83,6 +83,9 @@ function reveal() {
   });
   document.documentElement.classList.add('rv');
 }
+
+// panggung 3D dimuat terpisah agar teks hero tampil dulu
+setTimeout(() => import('../landing/stage-ui.js').then(m => m.initStage($('#stage'))).catch(() => $('#stage').classList.add('static')), 0);
 
 (async () => {
   const me = await mountNav('home');

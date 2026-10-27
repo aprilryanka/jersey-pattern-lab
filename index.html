@@ -16,50 +16,96 @@
 </head>
 <body class="landing">
 <main>
-  <section class="hero wrap">
-    <div class="hero-copy">
-      <p class="eyebrow">Generator pattern · Pratinjau 3D · Pola jahit</p>
-      <h1>Desain jersey, lihat di 3D, langsung jadi pola jahit.</h1>
-      <p class="lead">Pilih motif atau racik pattern sendiri, tambah nama, nomor, logo, dan sponsor. Semuanya tampil di model 3D dan diekspor sebagai pola jahit skala 1:1 yang siap dicetak.</p>
-      <div class="cta-row">
-        <a class="btn primary lg" href="/studio">Mulai desain gratis</a>
-        <a class="btn lg" href="#harga">Lihat harga</a>
-      </div>
-    </div>
-    <figure class="hero-art" aria-label="Contoh jersey hasil Studio, tampak depan dan belakang">
-      <img class="j-back" src="/img/hero-back.webp" alt="Jersey tampak belakang dengan nama SETIAWAN dan nomor 09" width="835" height="900">
-      <img class="j-front" src="/img/hero-front.webp" alt="Jersey V-neck motif chevron biru kuning tampak depan" width="831" height="900">
-      <figcaption>
-        <span>Depan · 51,2 × 70,3 cm</span>
-        <span>Belakang · 51,3 × 72,9 cm</span>
-        <span>Lengan · 40,9 × 17,3 cm</span>
-      </figcaption>
-    </figure>
-  </section>
+  <section class="stage" id="stage" aria-label="Jersey 3D interaktif">
+    <div class="stage-sticky">
+      <canvas class="stage-canvas" id="stageCanvas" aria-hidden="true"></canvas>
+      <img class="stage-poster" src="/img/hero-front.webp" alt="" width="831" height="900" fetchpriority="high">
 
-  <section class="features wrap" id="fitur" aria-labelledby="fitur-h">
-    <h2 id="fitur-h">Dari pattern ke kain, dalam satu Studio</h2>
-    <div class="fgrid">
-      <article>
-        <span class="ico" aria-hidden="true">◐</span>
-        <h3>Basic dan Advanced</h3>
-        <p>8 motif cepat untuk semua orang. Mode Advanced membuka generator Jersey Pattern Lab lengkap: 9 gaya noise, 12 palet, finishing, efek glass, dan foto sebagai sumber pattern.</p>
-      </article>
-      <article>
-        <span class="ico" aria-hidden="true">◎</span>
-        <h3>Pratinjau 3D realistis</h3>
-        <p>Lihat jersey dari depan, belakang, dan samping dengan tekstur rajutan, kilap serat, dan bayangan lantai. Latar studio, polos, atau transparan untuk materi promosi.</p>
-      </article>
-      <article>
-        <span class="ico" aria-hidden="true">▱</span>
-        <h3>Pola jahit skala 1:1</h3>
-        <p>Setiap panel (depan, belakang, lengan, rib) diekspor lengkap dengan desain, garis potong, dan arah serat. Motif menyambung di jahitan sisi seperti kain fullprint.</p>
-      </article>
-      <article>
-        <span class="ico" aria-hidden="true">✦</span>
-        <h3>Nama, nomor, logo, sponsor</h3>
-        <p>28 font jersey, ukuran huruf dalam milimeter, garis tepi, dan upload logo PNG transparan. Seret langsung di pola 2D, hasilnya ikut di 3D.</p>
-      </article>
+      <div class="stage-ui">
+        <article class="chap" data-chap="0" aria-labelledby="c0h">
+          <div class="chap-in">
+            <p class="eyebrow">Generator pattern · Pratinjau 3D · Pola jahit</p>
+            <h1 id="c0h">Desain jersey, lihat di 3D, langsung jadi pola jahit.</h1>
+            <p class="lead">Pilih motif atau racik pattern sendiri, tambah nama, nomor, logo, dan sponsor. Semuanya tampil di model 3D dan diekspor sebagai pola jahit skala 1:1 yang siap dicetak.</p>
+            <div class="cta-row">
+              <a class="btn primary lg" href="/studio">Mulai desain gratis</a>
+              <a class="btn lg" href="#harga">Lihat harga</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="chap" data-chap="1" aria-labelledby="c1h">
+          <div class="chap-in">
+            <p class="eyebrow">Pratinjau 3D realistis</p>
+            <h2 id="c1h">Kainnya terasa, bukan gambar datar.</h2>
+            <p class="lead">Rajutan, kilap serat, jahitan panel, dan bayangan lantai ikut dihitung. Latar studio, polos, atau transparan untuk materi promosi.</p>
+            <ul class="tags" aria-label="Detail kain"><li>Rajut 2,7 mm</li><li>Kilap serat</li><li>Jahitan tiap panel</li></ul>
+          </div>
+        </article>
+
+        <article class="chap top" data-chap="2" aria-labelledby="c2h">
+          <div class="chap-in">
+            <p class="eyebrow">Pola jahit skala 1:1</p>
+            <h2 id="c2h">Satu desain, jadi pola siap cetak.</h2>
+            <p class="lead">Setiap panel diekspor lengkap dengan desain, garis potong, dan arah serat. Motif menyambung di jahitan sisi seperti kain fullprint.</p>
+            <ul class="tags" id="dimTags" aria-label="Ukuran panel"><li>Depan · 51,2 × 70,3 cm</li><li>Belakang · 51,3 × 72,9 cm</li><li>Lengan · 40,9 × 17,3 cm</li></ul>
+          </div>
+        </article>
+
+        <article class="chap" data-chap="3" aria-labelledby="c3h">
+          <div class="chap-in ctl" data-live>
+            <h2 id="c3h">Racik pattern sampai ketemu.</h2>
+            <div class="grp"><span class="lbl" id="lblStyle">Motif</span><div class="chips" id="styleChips" role="group" aria-labelledby="lblStyle"></div></div>
+            <div class="grp"><span class="lbl" id="lblPal">Palet</span><div class="sw" id="palSw" role="group" aria-labelledby="lblPal"></div></div>
+            <div class="grp"><span class="lbl">Warna sendiri</span>
+              <div class="cols">
+                <label class="col"><input type="color" id="col0" aria-label="Warna 1"><span>1</span></label>
+                <label class="col"><input type="color" id="col1" aria-label="Warna 2"><span>2</span></label>
+                <label class="col"><input type="color" id="col2" aria-label="Warna 3"><span>3</span></label>
+              </div>
+            </div>
+            <div class="row">
+              <button class="btn primary" id="btnRand" type="button">Acak pattern</button>
+              <output class="seed" id="seedOut" aria-live="polite">Pola #11</output>
+            </div>
+            <p class="note">Setiap klik membuat kombinasi baru. Mode Advanced di Studio menambah 9 gaya noise, 12 palet, efek glass, dan foto sebagai sumber pattern.</p>
+          </div>
+        </article>
+
+        <article class="chap" data-chap="4" aria-labelledby="c4h">
+          <div class="chap-in ctl" data-live>
+            <h2 id="c4h">Nama, nomor, dan font tim kamu.</h2>
+            <div class="g2">
+              <label class="field"><span>Nama tim</span><input id="inTeam" type="text" maxlength="14" value="GARUDA FC" autocomplete="off" spellcheck="false"></label>
+              <label class="field"><span>Nomor</span><input id="inNum" type="text" maxlength="2" value="09" inputmode="numeric" autocomplete="off"></label>
+            </div>
+            <label class="field"><span>Nama pemain</span><input id="inName" type="text" maxlength="12" value="SETIAWAN" autocomplete="off" spellcheck="false"></label>
+            <div class="g2">
+              <label class="field"><span>Font</span><select id="selFont"></select></label>
+              <label class="field"><span>Animasi masuk</span>
+                <select id="selMotion"><option value="rise" selected>Muncul</option><option value="type">Ketik</option><option value="glitch">Glitch</option><option value="none">Tanpa</option></select></label>
+            </div>
+            <div class="row">
+              <button class="btn sm" id="btnPlay" type="button">Putar animasi</button>
+              <div class="cams" role="group" aria-label="Posisi kamera">
+                <button class="btn sm ghost" data-cam="front" type="button">Depan</button>
+                <button class="btn sm ghost" data-cam="back" type="button">Belakang</button>
+                <button class="btn sm ghost" data-cam="collar" type="button">Kerah</button>
+                <button class="btn sm ghost" data-cam="sleeve" type="button">Lengan</button>
+                <button class="btn sm ghost" data-cam="fabric" type="button">Kain</button>
+              </div>
+            </div>
+            <div class="row">
+              <a class="btn primary" href="/studio">Lanjut di Studio</a>
+              <span class="note">28 font jersey, logo, dan sponsor ada di Studio.</span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <ol class="stage-dots" id="stageDots" aria-label="Bagian"></ol>
+      <p class="stage-hint" id="stageHint" aria-hidden="true"><span>Gulir untuk mendekat</span><i></i></p>
+      <p class="stage-status" id="stageStatus" role="status" hidden></p>
     </div>
   </section>
 
