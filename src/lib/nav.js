@@ -1,6 +1,7 @@
 import { getMe, planOf, isAdmin, signOut } from './supabase.js';
 import { E } from './ui.js';
 import { themeButton } from './theme.js';
+import { trackView } from './track.js';
 
 export const LOGO_SVG = '<svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="var(--accent)"/><path d="M20 14l-10 7 5 9 5-3v23h24V27l5 3 5-9-10-7h-6a6 6 0 0 1-12 0z" fill="var(--accent-ink)"/><path d="M26 30l6 8 6-8" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round"/></svg>';
 
@@ -29,6 +30,7 @@ document.addEventListener('click', e => {
 addEventListener('pageshow', e => { if (e.persisted) document.querySelectorAll('body > .boot').forEach(b => b.remove()); });
 
 export async function mountNav(current, { tag } = {}) {
+  trackView();
   const me = await getMe().catch(() => null);
   const plan = planOf(me);
   const links = [
@@ -37,7 +39,7 @@ export async function mountNav(current, { tag } = {}) {
     ['pricing', '/#harga', 'Harga'],
     ['faq', '/#faq', 'FAQ'],
   ];
-  if (me) links.push(['billing', '/billing', 'Langganan']);
+  if (me) links.push(['account', '/akun', 'Akun'], ['billing', '/billing', 'Langganan']);
   if (isAdmin(me)) links.push(['admin', '/admin', 'Admin']);
 
   const nav = E('nav', { 'aria-label': 'Navigasi utama' },
@@ -47,7 +49,7 @@ export async function mountNav(current, { tag } = {}) {
   if (me) {
     act.append(
       E('span', { className: 'chip', text: plan === 'pro' ? (isAdmin(me) ? 'ADMIN' : 'PRO') : 'GRATIS' }),
-      E('span', { className: 'who', text: me.user.email, title: me.user.email }),
+      E('a', { className: 'who', href: '/akun', text: me.user.email, title: 'Akun saya' }),
       E('button', { className: 'btn sm ghost', text: 'Keluar', on: { click: signOut } }),
     );
     if (current !== 'studio') act.append(E('a', { className: 'btn sm primary', href: '/studio', text: 'Buka Studio' }));

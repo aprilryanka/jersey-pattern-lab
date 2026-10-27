@@ -2,11 +2,25 @@ import '../styles/base.css';
 import '../styles/auth.css';
 import { sb } from '../lib/supabase.js';
 import { mountNav } from '../lib/nav.js';
-import { $ } from '../lib/ui.js';
+import { $, eyeToggle } from '../lib/ui.js';
+
+eyeToggle($('#pw')); eyeToggle($('#pw2'));
+const needsConfirm = () => mode === 'signup' || mode === 'reset';
+function pwHint() {
+  const h = $('#pwHint'), a = $('#pw').value, b = $('#pw2').value;
+  if (!needsConfirm() || (!a && !b)) { h.hidden = true; return; }
+  h.hidden = false;
+  if (a.length < 8) { h.className = 'pw-hint bad'; h.textContent = `Minimal 8 karakter (${a.length}/8).`; }
+  else if (!b) { h.className = 'pw-hint'; h.textContent = 'Ketik ulang password di kolom kedua.'; }
+  else if (a !== b) { h.className = 'pw-hint bad'; h.textContent = 'Password belum sama.'; }
+  else { h.className = 'pw-hint good'; h.textContent = '✓ Password cocok.'; }
+}
+$('#pw').addEventListener('input', pwHint); $('#pw2').addEventListener('input', pwHint);
 
 const params = new URLSearchParams(location.search);
 const next = (params.get('next') || '/studio').startsWith('/') ? params.get('next') || '/studio' : '/studio';
-let mode = params.get('mode') === 'signup' ? 'signup' : 'login';
+let mode = ['signup', 'forgot'].includes(params.get('mode')) ? params.get('mode') : 'login';
+if (params.get('email')) $('#email').value = params.get('email');
 if (/type=recovery/.test(location.hash)) mode = 'reset';
 
 
@@ -24,6 +38,7 @@ function setMode(m) {
   $('#nameWrap').hidden = m !== 'signup';
   $('#emailWrap').hidden = m === 'reset';
   $('#pwWrap').hidden = m === 'forgot';
+  $('#pw2Wrap').hidden = !(m === 'signup' || m === 'reset'); $('#pw2').value = ''; pwHint();
   $('#pw').autocomplete = m === 'login' ? 'current-password' : 'new-password';
   $('#forgot').hidden = m !== 'login';
   $('#err').textContent = ''; $('#ok').textContent = '';
@@ -43,6 +58,7 @@ $('#form').onsubmit = async e => {
   $('#err').textContent = ''; $('#ok').textContent = '';
   if (mode !== 'reset' && !/^\S+@\S+\.\S+$/.test(email)) { $('#err').textContent = 'Tulis email yang valid.'; return; }
   if (mode !== 'forgot' && pw.length < 8) { $('#err').textContent = 'Password minimal 8 karakter.'; return; }
+  if (needsConfirm() && pw !== $('#pw2').value) { $('#err').textContent = 'Password dan ulangi password belum sama.'; $('#pw2').focus(); return; }
   btn.disabled = true;
   try {
     if (mode === 'login') {
@@ -57,12 +73,12 @@ $('#form').onsubmit = async e => {
     } else if (mode === 'forgot') {
       const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/login' });
       if (error) throw error;
-      $('#ok').textContent = 'Link reset terkirim. Cek email kamu.';
+      $('#ok').textContent = 'Kalau email itu terdaftar, link atur ulang password sudah kami kirim. Cek kotak masuk dan folder spam. Link hanya berlaku sementara.';
     } else if (mode === 'reset') {
       const { error } = await sb.auth.updateUser({ password: pw });
       if (error) throw error;
-      $('#ok').textContent = 'Password tersimpan. Mengalihkan ke Studio…';
-      setTimeout(() => location.href = '/studio', 900);
+      $('#ok').textContent = 'Password tersimpan. Mengalihkan ke akunmu…';
+      setTimeout(() => location.href = '/akun', 900);
     }
   } catch (err) {
     $('#err').textContent = MSG[err.message] || err.message || 'Terjadi kesalahan. Coba lagi.';

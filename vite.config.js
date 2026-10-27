@@ -12,6 +12,7 @@ export default defineConfig({
         studio: resolve(__dirname, 'studio.html'),
         billing: resolve(__dirname, 'billing.html'),
         admin: resolve(__dirname, 'admin.html'),
+        akun: resolve(__dirname, 'akun.html'),
       },
     },
   },

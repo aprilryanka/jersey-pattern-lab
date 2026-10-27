@@ -79,3 +79,23 @@ export function shrinkImage(file, maxW = 1600, type = 'image/png', q = .9) {
     img.src = URL.createObjectURL(file);
   });
 }
+
+const EYE = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.9 10.9 0 0 1 12 5c6.4 0 10 7 10 7a17.7 17.7 0 0 1-3.2 4.2M6.6 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7a9.8 9.8 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+
+/** Tambahkan tombol mata (tampilkan/sembunyikan) ke input password. */
+export function eyeToggle(input) {
+  if (input.parentElement?.classList.contains('pw')) return input;
+  const wrap = E('span', { className: 'pw' });
+  const btn = E('button', { type: 'button', className: 'pw-eye', html: EYE, 'aria-label': 'Tampilkan password', 'aria-pressed': 'false' });
+  btn.onclick = () => {
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.innerHTML = show ? EYE_OFF : EYE;
+    btn.setAttribute('aria-pressed', String(show));
+    btn.setAttribute('aria-label', show ? 'Sembunyikan password' : 'Tampilkan password');
+    input.focus({ preventScroll: true });
+  };
+  input.replaceWith(wrap); wrap.append(input, btn);
+  return input;
+}

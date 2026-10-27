@@ -68,3 +68,48 @@ body.page { min-height: 100vh; }
 @media (max-width: 700px) { .formgrid { grid-template-columns: 1fr; } }
 .tcard-a { display: grid; grid-template-columns: 56px 1fr auto; gap: 12px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--line); }
 .tcard-a img, .tcard-a .av { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; background: var(--accent-soft); }
+
+/* ---------- akun ---------- */
+.acc-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.acc-kpis .kpi small a { color: var(--accent); }
+@media (max-width: 700px) { .acc-kpis { grid-template-columns: 1fr 1fr; } .acc-kpis .kpi:last-child { grid-column: 1 / -1; } }
+.acc-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+@media (max-width: 820px) { .acc-grid { grid-template-columns: 1fr; } }
+.acc-links { display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 14px; }
+.pay-form .linkbtn { justify-self: start; }
+.who[href] { text-decoration: none; }
+.who[href]:hover { color: var(--accent); }
+.uacts { display: grid; gap: 6px; }
+.uacts .acts { align-items: center; }
+.warn-t { color: var(--warn) !important; font-weight: 600; }
+
+/* ---------- statistik pengunjung ---------- */
+.seg-a { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: 999px; justify-self: start; }
+.seg-a button { border: 0; background: none; color: var(--muted); padding: 6px 12px; border-radius: 999px; font: 600 12px var(--f-mono); cursor: pointer; }
+.seg-a button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.tbody-a { display: grid; gap: 14px; }
+.tks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.tk { display: grid; gap: 4px; padding: 12px; border: 1px solid var(--line); border-radius: var(--r-m); }
+.tk span { font: 500 11px var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.tk b { font: 800 28px/1 var(--f-display); font-variant-numeric: tabular-nums; }
+.tlegend { display: flex; gap: 16px; font-size: 12px; color: var(--muted); }
+.tlegend span::before { content: ""; display: inline-block; vertical-align: middle; margin-right: 6px; }
+.lg-bar::before { width: 10px; height: 10px; border-radius: 2px; background: var(--accent); }
+.lg-line::before { width: 16px; height: 2px; background: var(--ink); }
+.tchart-w { overflow: hidden; }
+.tchart { width: 100%; height: auto; display: block; }
+.tchart .grid { stroke: var(--line); stroke-width: 1; }
+.tchart .ax { fill: var(--muted); font: 10px var(--f-mono); }
+.tchart .bar { fill: var(--accent); opacity: .85; }
+.tchart .hit { fill: transparent; }
+.tchart .col:hover .bar { opacity: 1; }
+.tchart .col:hover .hit { fill: color-mix(in srgb, var(--ink) 6%, transparent); }
+.tchart .line { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; opacity: .75; pointer-events: none; }
+.tchart .dot { fill: var(--ink); opacity: .75; pointer-events: none; }
+.tlists { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.tlist h3 { margin: 0 0 8px; font: 600 11px var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.tlist ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.tlist li { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; border-bottom: 1px dashed var(--line); padding-bottom: 5px; }
+.tlist li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tlist li b { font-variant-numeric: tabular-nums; }
+@media (max-width: 760px) { .tks, .tlists { grid-template-columns: 1fr; } .tk b { font-size: 24px; } }

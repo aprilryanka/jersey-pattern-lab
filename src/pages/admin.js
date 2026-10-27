@@ -28,10 +28,64 @@ async function overview() {
   ));
   view.append(E('div', { className: 'kpis' },
     k('Pesanan berjalan', s.orders_open), k('Model 3D aktif', s.models), k('Total pengguna', s.users), k('Project', s.projects)));
+  view.append(await trafficCard());
   const { data: recent } = await sb.from('payments').select('created_at,amount,status,user_id').order('created_at', { ascending: false }).limit(6);
   view.append(card('Pembayaran terbaru', tbl(['Tanggal', 'Jumlah', 'Status'], (recent || []).map(r => E('tr', {}, E('td', { text: fmtDate(r.created_at) }), E('td', { className: 'num', text: rp(r.amount) }), E('td', {}, E('span', { className: 'pill-s ' + r.status, text: STATUS[r.status] })))))));
   setBadge(s.pending_payments);
 }
+/* ---------- statistik pengunjung ---------- */
+const NS = 'http://www.w3.org/2000/svg';
+const S = (tag, attrs = {}, ...kids) => { const el = document.createElementNS(NS, tag); for (const k in attrs) el.setAttribute(k, attrs[k]); kids.forEach(c => c != null && el.append(c)); return el; };
+const nf = n => (+n || 0).toLocaleString('id-ID');
+const dLabel = d => new Date(d + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+
+function trafficChart(daily) {
+  const W = 760, H = 240, L = 36, R = 10, T = 14, B = 26, iw = W - L - R, ih = H - T - B;
+  const max = Math.max(4, ...daily.map(d => d.views));
+  const step = Math.pow(10, Math.floor(Math.log10(max))), top = Math.ceil(max / step) * step;
+  const y = v => T + ih - (v / top) * ih, bw = iw / daily.length;
+  const svg = S('svg', { viewBox: `0 0 ${W} ${H}`, class: 'tchart', role: 'img', 'aria-label': 'Grafik pengunjung harian' });
+  for (let i = 0; i <= 4; i++) { const v = top * i / 4, yy = y(v); svg.append(S('line', { x1: L, x2: W - R, y1: yy, y2: yy, class: 'grid' }), S('text', { x: L - 6, y: yy + 4, class: 'ax', 'text-anchor': 'end' }, nf(Math.round(v)))); }
+  const every = Math.ceil(daily.length / 7);
+  daily.forEach((d, i) => {
+    const x = L + i * bw, h = Math.max(0, T + ih - y(d.visitors));
+    const g = S('g', { class: 'col' }, S('title', {}, `${dLabel(d.day)}: ${nf(d.visitors)} pengunjung, ${nf(d.views)} halaman dibuka`),
+      S('rect', { x: x, y: T, width: bw, height: ih, class: 'hit' }),
+      S('rect', { x: x + bw * .18, y: T + ih - h, width: Math.max(1, bw * .64), height: h, rx: Math.min(3, bw * .2), class: 'bar' }));
+    svg.append(g);
+    if (i % every === 0 || i === daily.length - 1) svg.append(S('text', { x: x + bw / 2, y: H - 8, class: 'ax', 'text-anchor': 'middle' }, dLabel(d.day)));
+  });
+  const pts = daily.map((d, i) => `${(L + i * bw + bw / 2).toFixed(1)},${y(d.views).toFixed(1)}`).join(' ');
+  svg.append(S('polyline', { points: pts, class: 'line' }));
+  daily.forEach((d, i) => svg.append(S('circle', { cx: L + i * bw + bw / 2, cy: y(d.views), r: daily.length > 40 ? 0 : 2.5, class: 'dot' })));
+  return svg;
+}
+
+async function trafficCard() {
+  const range = E('div', { className: 'seg-a', role: 'group', 'aria-label': 'Rentang waktu' });
+  const body = E('div', { className: 'tbody-a' }, E('p', { className: 'empty', text: 'Memuat statistik…' }));
+  const c = card('Pengunjung web', range, body);
+  const list = (title, rows, map = k => k) => E('div', { className: 'tlist' }, E('h3', { text: title }),
+    rows.length ? E('ol', {}, rows.map(r => E('li', {}, E('span', { text: map(r.k) }), E('b', { text: nf(r.n) })))) : E('p', { className: 'empty', text: 'Belum ada data.' }));
+  const PATH = { '/': 'Beranda', '/studio': 'Studio', '/login': 'Masuk / daftar', '/billing': 'Langganan', '/akun': 'Akun' };
+  const DEV = { mobile: 'HP', tablet: 'Tablet', desktop: 'Laptop / PC' };
+  async function load(days) {
+    [...range.children].forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.d === days)));
+    const { data, error } = await sb.rpc('admin_traffic', { p_days: days });
+    if (error) { body.replaceChildren(E('p', { className: 'err', text: error.message })); return; }
+    const k = (label, val) => E('div', { className: 'tk' }, E('span', { text: label }), E('b', { text: nf(val) }));
+    body.replaceChildren(
+      E('div', { className: 'tks' }, k('Pengunjung hari ini', data.today_visitors), k(`Pengunjung ${days} hari`, data.total_visitors), k(`Halaman dibuka ${days} hari`, data.total_views)),
+      E('div', { className: 'tlegend' }, E('span', { className: 'lg-bar', text: 'Pengunjung unik' }), E('span', { className: 'lg-line', text: 'Halaman dibuka' })),
+      E('div', { className: 'tchart-w' }, trafficChart(data.daily)),
+      E('div', { className: 'tlists' }, list('Halaman teratas', data.pages, p => PATH[p] || p), list('Sumber pengunjung', data.referrers), list('Perangkat', data.devices, d => DEV[d] || d)),
+      ...(data.total_views ? [] : [E('p', { className: 'hint', text: 'Statistik mulai tercatat sejak fitur ini aktif. Data akan terisi seiring orang membuka website.' })]));
+  }
+  [[7, '7 hari'], [30, '30 hari'], [90, '90 hari']].forEach(([d, t]) => range.append(E('button', { type: 'button', text: t, 'data-d': d, on: { click: () => load(d) } })));
+  load(30);
+  return c;
+}
+
 function setBadge(n) { const b = $('#badgePay'); b.hidden = !n; b.textContent = n; }
 
 /* ---------- Pembayaran ---------- */
@@ -90,16 +144,33 @@ async function users() {
     const s = q.value.toLowerCase();
     const rows = list.filter(u => !s || (u.email || '').toLowerCase().includes(s) || (u.name || '').toLowerCase().includes(s)).slice(0, 300).map(u => {
       const active = u.plan !== 'free' && u.plan_until && new Date(u.plan_until) > new Date();
-      const days = E('input', { className: 'in', type: 'number', value: 30, min: 1, max: 365, style: { width: '72px' }, 'aria-label': 'Hari' });
+      const left = active ? Math.ceil((new Date(u.plan_until) - Date.now()) / 864e5) : 0;
       const upd = async (patch, msg) => { const { error } = await sb.from('profiles').update(patch).eq('id', u.id); if (error) return toast('Gagal: ' + error.message); Object.assign(u, patch); toast(msg); draw(); };
+      const endOfDay = d => { const x = new Date(d); x.setHours(23, 59, 59, 0); return x; };
+      // tambah hari (dari tanggal berakhir bila masih aktif)
+      const days = E('input', { className: 'in', type: 'number', value: 30, min: 1, max: 3650, style: { width: '70px' }, 'aria-label': 'Jumlah hari' });
+      const addDays = () => { const n = Math.round(+days.value); if (!n || n < 1) return toast('Isi jumlah hari'); const base = active ? new Date(u.plan_until) : new Date(); base.setDate(base.getDate() + n); upd({ plan: 'pro', plan_until: base.toISOString() }, `Pro +${n} hari, berakhir ${fmtDate(base)}`); };
+      // atur sisa hari persis (dihitung dari hari ini)
+      const setLeft = () => { const n = Math.round(+days.value); if (n == null || n < 1) return toast('Isi jumlah hari'); const d = new Date(); d.setDate(d.getDate() + n); upd({ plan: 'pro', plan_until: endOfDay(d).toISOString() }, `Sisa Pro diatur ${n} hari, berakhir ${fmtDate(d)}`); };
+      // atur tanggal berakhir langsung
+      const iso = active ? new Date(new Date(u.plan_until).getTime() + 7 * 36e5).toISOString().slice(0, 10) : '';
+      const date = E('input', { className: 'in', type: 'date', value: iso, min: new Date().toISOString().slice(0, 10), style: { width: '150px' }, 'aria-label': 'Tanggal berakhir Pro' });
+      const setDate = () => { if (!date.value) return toast('Pilih tanggal berakhir'); const d = endOfDay(date.value + 'T00:00:00'); if (d <= new Date()) return toast('Tanggal harus setelah hari ini'); upd({ plan: 'pro', plan_until: d.toISOString() }, 'Pro berakhir ' + fmtDate(d)); };
+      const status = u.role === 'admin' ? E('span', { className: 'pill-s pro', text: 'ADMIN' })
+        : active ? E('div', {}, E('span', { className: 'pill-s approved', text: 'PRO s/d ' + fmtDate(u.plan_until) }), E('br'), E('small', { className: 'hint' + (left <= 5 ? ' warn-t' : ''), text: 'sisa ' + left + ' hari' }))
+        : E('span', { className: 'pill-s', text: 'GRATIS' });
+      const acts = u.role === 'admin' ? E('span', { className: 'hint', text: 'Admin selalu Pro' }) : E('div', { className: 'uacts' },
+        E('div', { className: 'acts' }, days, E('span', { className: 'hint', text: 'hari' }),
+          E('button', { className: 'btn sm', text: active ? '+ Tambah' : '+ Pro', title: 'Tambah hari dari tanggal berakhir', on: { click: addDays } }),
+          active ? E('button', { className: 'btn sm', text: 'Atur sisa', title: 'Jadikan sisa masa Pro persis sejumlah hari ini, dihitung dari hari ini', on: { click: setLeft } }) : null),
+        E('div', { className: 'acts' }, date, E('button', { className: 'btn sm', text: 'Atur tanggal', on: { click: setDate } }),
+          active ? confirmBtn('Cabut Pro', () => upd({ plan: 'free', plan_until: null }, 'Pro dicabut'), 'btn sm') : null,
+          u.id !== me.user.id ? E('button', { className: 'btn sm danger', text: u.banned ? 'Buka blokir' : 'Blokir', on: { click: () => upd({ banned: !u.banned }, u.banned ? 'Blokir dibuka' : 'Pengguna diblokir') } }) : null));
       return E('tr', {},
         E('td', {}, E('b', { text: u.email }), E('br'), E('small', { className: 'hint', text: (u.name || '—') + ' · daftar ' + fmtDate(u.created_at) })),
-        E('td', {}, u.role === 'admin' ? E('span', { className: 'pill-s pro', text: 'ADMIN' }) : active ? E('span', { className: 'pill-s approved', text: 'PRO s/d ' + fmtDate(u.plan_until) }) : E('span', { className: 'pill-s', text: 'GRATIS' }), u.banned ? E('span', { className: 'pill-s rejected', text: ' DIBLOKIR' }) : null),
+        E('td', {}, status, u.banned ? E('span', { className: 'pill-s rejected', text: ' DIBLOKIR' }) : null),
         E('td', { className: 'num', text: u.projects }),
-        E('td', {}, E('div', { className: 'acts' }, days,
-          E('button', { className: 'btn sm', text: '+ Pro', on: { click: () => { const base = active ? new Date(u.plan_until) : new Date(); base.setDate(base.getDate() + (+days.value || 30)); upd({ plan: 'pro', plan_until: base.toISOString() }, 'Pro diperpanjang'); } } }),
-          active ? E('button', { className: 'btn sm', text: 'Cabut Pro', on: { click: () => upd({ plan: 'free', plan_until: null }, 'Pro dicabut') } }) : null,
-          u.id !== me.user.id ? E('button', { className: 'btn sm danger', text: u.banned ? 'Buka blokir' : 'Blokir', on: { click: () => upd({ banned: !u.banned }, u.banned ? 'Blokir dibuka' : 'Pengguna diblokir') } }) : null)));
+        E('td', {}, acts));
     });
     box.replaceChildren(rows.length ? tbl(['Pengguna', 'Status', 'Project', 'Aksi'], rows) : E('p', { className: 'empty', text: 'Tidak ada pengguna yang cocok.' }));
   };
@@ -322,6 +393,30 @@ async function settings() {
     if (!error) await sb.from('plans').update({ price_monthly: price }).eq('id', 'pro');
     toast(error ? 'Gagal: ' + error.message : 'Pengaturan tersimpan'); btn.disabled = false;
   };
+  view.append(notifyCard((S.notify || {}).ntfy_topic || ''));
+}
+
+/* notifikasi HP lewat aplikasi ntfy (gratis, tanpa akun) */
+function notifyCard(topic) {
+  const tI = E('input', { className: 'in num', value: topic, readOnly: true, 'aria-label': 'Topik notifikasi' });
+  const copy = E('button', { className: 'btn sm', text: 'Salin', on: { click: () => navigator.clipboard?.writeText(tI.value).then(() => toast('Topik tersalin')) } });
+  const test = E('button', { className: 'btn primary', text: 'Kirim notifikasi tes' });
+  const regen = confirmBtn('Ganti topik', async () => {
+    const t = 'jpl-' + [...crypto.getRandomValues(new Uint8Array(9))].map(b => b.toString(16).padStart(2, '0')).join('');
+    const { error } = await sb.from('settings').upsert({ key: 'notify', value: { ntfy_topic: t } });
+    if (error) return toast('Gagal: ' + error.message);
+    tI.value = t; toast('Topik baru dibuat. Subscribe ulang di aplikasi ntfy.'); regen.disabled = false;
+  }, 'btn sm');
+  test.onclick = async () => { test.disabled = true; const { error } = await sb.rpc('admin_test_notify'); toast(error ? 'Gagal: ' + error.message : 'Terkirim. Cek HP kamu dalam beberapa detik.'); test.disabled = false; };
+  return card('Notifikasi HP',
+    E('p', { className: 'hint', text: 'Setiap ada pengguna yang mengirim bukti transfer, HP kamu langsung dapat notifikasi berisi email dan nominalnya. Ketuk notifikasinya untuk membuka tab Pembayaran.' }),
+    E('ol', { className: 'pay-steps' },
+      E('li', {}, 'Pasang aplikasi ', E('b', { text: 'ntfy' }), ' (gratis): ', E('a', { href: 'https://apps.apple.com/app/ntfy/id1625396347', target: '_blank', rel: 'noopener', text: 'iPhone' }), ' · ', E('a', { href: 'https://play.google.com/store/apps/details?id=io.heckel.ntfy', target: '_blank', rel: 'noopener', text: 'Android' }), '.'),
+      E('li', {}, 'Buka ntfy, ketuk ', E('b', { text: '+' }), ', tempel topik di bawah, lalu Subscribe. Izinkan notifikasi saat diminta.'),
+      E('li', {}, 'Tekan "Kirim notifikasi tes" untuk memastikan sudah masuk.')),
+    E('div', { className: 'acts' }, tI, copy, regen),
+    E('p', { className: 'hint', text: 'Rahasiakan topik ini: siapa pun yang tahu topiknya bisa ikut menerima notifikasi. Bila bocor, tekan Ganti topik.' }),
+    test);
 }
 
 /* ---------- router ---------- */

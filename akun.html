@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<script>try{var t=localStorage.getItem("jpl-theme");if(t==="dark"||t==="light")document.documentElement.dataset.theme=t}catch(e){}</script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Akun saya · Jersey Pattern Lab</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+</head>
+<body class="page">
+<main class="page-main">
+  <header class="page-head">
+    <p class="eyebrow">Dashboard pengguna</p>
+    <h1 id="hello">Akun saya</h1>
+    <p class="status" id="email">Memuat akun…</p>
+  </header>
+
+  <div class="kpis acc-kpis">
+    <div class="kpi" id="kPlan"><span>Status</span><b>—</b><small></small></div>
+    <div class="kpi" id="kDays"><span>Sisa masa Pro</span><b>—</b><small></small></div>
+    <div class="kpi" id="kProj"><span>Project tersimpan</span><b>—</b><small><a href="/studio">Buka Studio</a></small></div>
+  </div>
+
+  <div class="bill-grid acc-grid">
+    <section class="card-l">
+      <h2>Profil</h2>
+      <form id="profForm" class="pay-form" novalidate>
+        <label class="field">Nama<input id="name" type="text" maxlength="60" autocomplete="name"></label>
+        <label class="field">Email<input id="mail" type="email" disabled></label>
+        <p class="okmsg" id="profOk" role="status"></p>
+        <button class="btn" type="submit" id="profSave">Simpan profil</button>
+      </form>
+      <div class="acc-links">
+        <a class="btn primary" href="/billing" id="upBtn">Langganan Pro</a>
+        <button class="btn ghost" type="button" id="logout">Keluar</button>
+      </div>
+    </section>
+
+    <section class="card-l">
+      <h2>Ganti password</h2>
+      <form id="pwForm" class="pay-form" novalidate>
+        <label class="field">Password saat ini<input id="pwOld" type="password" autocomplete="current-password"></label>
+        <label class="field">Password baru<input id="pwNew" type="password" autocomplete="new-password" minlength="8"></label>
+        <label class="field">Ulangi password baru<input id="pwNew2" type="password" autocomplete="new-password" minlength="8"></label>
+        <p class="pw-hint" id="pwHint" hidden></p>
+        <p class="err" id="pwErr" role="alert"></p>
+        <p class="okmsg" id="pwOk" role="status"></p>
+        <button class="btn primary lg" type="submit" id="pwSave">Simpan password baru</button>
+        <a class="linkbtn" href="/login?mode=forgot" id="forgotLink">Lupa password saat ini?</a>
+      </form>
+    </section>
+  </div>
+</main>
+<script type="module" src="/src/pages/account.js"></script>
+</body>
+</html>
