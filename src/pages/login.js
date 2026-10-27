@@ -51,6 +51,8 @@ const MSG = {
   'Invalid login credentials': 'Email atau password salah.',
   'Email not confirmed': 'Email belum dikonfirmasi. Cek kotak masuk (dan folder spam) untuk link konfirmasi.',
   'User already registered': 'Email ini sudah terdaftar. Silakan masuk.',
+  'email rate limit exceeded': 'Server sedang sibuk mengirim email. Tunggu beberapa menit lalu coba lagi, atau hubungi admin via WhatsApp 0896-3454-7665.',
+  'Email rate limit exceeded': 'Server sedang sibuk mengirim email. Tunggu beberapa menit lalu coba lagi, atau hubungi admin via WhatsApp 0896-3454-7665.',
 };
 $('#form').onsubmit = async e => {
   e.preventDefault();
@@ -81,7 +83,7 @@ $('#form').onsubmit = async e => {
       setTimeout(() => location.href = '/akun', 900);
     }
   } catch (err) {
-    $('#err').textContent = MSG[err.message] || err.message || 'Terjadi kesalahan. Coba lagi.';
+    $('#err').textContent = MSG[err.message] || (/rate limit/i.test(err.message || '') ? MSG['email rate limit exceeded'] : null) || err.message || 'Terjadi kesalahan. Coba lagi.';
   } finally { btn.disabled = false; }
 };
 
