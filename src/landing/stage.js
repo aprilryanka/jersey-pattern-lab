@@ -9,6 +9,8 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { loadGarment } from '../studio/viewer3d.js';
 import { layoutModel, renderAtlas, renderLayers, panelPath, FONTS } from '../studio/atlas.js';
 import { BASIC_STYLES, BASIC_PALETTES } from '../studio/basic.js';
+import { initAdvanced } from '../studio/advanced.js';
+import { DESIGNS, loadDesignFont } from './designs.js';
 import DEFAULT_PANELS from '../studio/default-panels.json';
 
 const MODEL_URL = '/models/jersey-basic-v-neck.glb';
@@ -278,12 +280,31 @@ export async function createStage(canvas, opts = {}) {
     ctx.restore();
   }
   function contrast() {
+    if (S.lockText) return;
     const [c1, c2] = S.basic.colors, l = (lum(c1) + lum(c2)) / 2, c = l > .55 ? '#10151a' : '#ffffff';
-    for (const k in layer) { layer[k].color = c; layer[k].stroke = c === '#ffffff' ? '#0b1d3a' : '#ffffff'; }
+    for (const k in layer) { layer[k].color = c; layer[k].stroke = c === '#ffffff' ? '#0b1d3a' : '#ffffff'; layer[k].strokeW = 2.5; }
   }
-  let baseDirty = true;
+  let baseDirty = true, advTile = null, advApi = null, advHost = null;
+  const tileCache = {};
+  /** Tile Advanced per desain (dibangun sinkron lewat generator Studio, di-cache). */
+  function advTileFor(d) {
+    if (tileCache[d.id]) return tileCache[d.id];
+    if (!advApi) { advHost = document.createElement('div'); advHost.hidden = true; advHost.setAttribute('aria-hidden', 'true'); document.body.append(advHost); advApi = initAdvanced(advHost); }
+    const sz = tier === 'low' ? 512 : 768, pat = advApi.render(d.adv, sz);
+    const c = document.createElement('canvas'); c.width = c.height = sz; c.getContext('2d').drawImage(pat, 0, 0); return (tileCache[d.id] = c);
+  }
+  function applyDesign(d) {
+    if (d.mode === 'advanced') { advTile = advTileFor(d); S.mode = 'advanced'; }
+    else { S.mode = 'basic'; Object.assign(S.basic, d.basic, { colors: [...d.basic.colors] }); }
+    S.ribColor = d.rib; S.edit.rot = 0; S.lockText = true; S.designId = d.id;
+    const t = d.text;
+    if (layer.team) layer.team.text = t.team; if (layer.fnum) layer.fnum.text = t.number; if (layer.name) layer.name.text = t.name; if (layer.bnum) layer.bnum.text = t.number;
+    for (const k in layer) Object.assign(layer[k], { font: t.font, color: t.color, stroke: t.stroke || t.color, strokeW: t.stroke ? 2.5 : 0, italic: !!t.italic, _full: null });
+    if (layer.team) { layer.team._home.size = t.size || 38; layer.team.size = layer.team._home.size; layer.team.lx = layer.team._home.lx; layer.team.ly = layer.team._home.ly; }
+    if (layer.fnum) layer.fnum.hidden = true;
+  }
   function repaint(layersOnly) {
-    if (baseDirty && !layersOnly) { renderAtlas(bctx, L, S, null, sc, { layers: false }); drawSeams(bctx); baseDirty = false; }
+    if (baseDirty && !layersOnly) { renderAtlas(bctx, L, S, S.mode === 'advanced' ? { pat: advTile } : null, sc, { layers: false }); drawSeams(bctx); baseDirty = false; }
     actx.setTransform(1, 0, 0, 1, 0, 0); actx.drawImage(base, 0, 0);
     renderLayers(actx, L, S, sc);
     tex.needsUpdate = true;
@@ -291,11 +312,13 @@ export async function createStage(canvas, opts = {}) {
   /** Ganti pola dengan wipe dari pola lama ke baru. */
   function changePattern(fn, wipe = true) {
     if (wipe) { pctx.setTransform(1, 0, 0, 1, 0, 0); pctx.drawImage(atlas, 0, 0); tex2.needsUpdate = true; }
+    S.mode = 'basic'; S.lockText = false; S.designId = null;
     fn(); contrast(); baseDirty = true; repaint();
     if (wipe && !REDUCED) { U.uWipe.value = -.2; wipeAnim = true; } else U.uWipe.value = 2;
   }
   let wipeAnim = false;
   try { await Promise.race([document.fonts.load('800 60px "Barlow Condensed"', 'GARUDA 09'), new Promise(r => setTimeout(r, 1500))]); } catch { /* pakai font cadangan */ }
+  { const d0 = DESIGNS.find(d => d.id === (opts.design || 'japan')) || DESIGNS[0]; await loadDesignFont(d0); applyDesign(d0); }
   repaint();
 
   /* ----- latar, lantai ----- */
@@ -458,6 +481,19 @@ export async function createStage(canvas, opts = {}) {
     follow(v) { follow = v; },
     fitFlatDist(aspect) { const t = Math.tan(rad(15)); return Math.max(flatH / 2 / t, flatW / 2 / (t * aspect)) * 1.12 / H; },
     get aspect() { return W / Hh; },
+    design: {
+      list: DESIGNS.map(d => ({ id: d.id, label: d.label })),
+      get current() { return S.designId || null; },
+      /** Tampilkan desain showcase dengan wipe dari desain sebelumnya. */
+      async show(id, wipe = true) {
+        const d = DESIGNS.find(x => x.id === id); if (!d) return;
+        await loadDesignFont(d);
+        if (destroyed) return;
+        if (wipe) { pctx.setTransform(1, 0, 0, 1, 0, 0); pctx.drawImage(atlas, 0, 0); tex2.needsUpdate = true; }
+        applyDesign(d); baseDirty = true; repaint();
+        if (wipe && !REDUCED) { U.uWipe.value = -.2; wipeAnim = true; } else U.uWipe.value = 2;
+      },
+    },
     pattern: {
       get state() { return { style: S.basic.style, colors: [...S.basic.colors], seed: S.basic.seed, scale: S.basic.scale }; },
       setStyle(id) { changePattern(() => { S.basic.style = id; }); },
@@ -478,9 +514,10 @@ export async function createStage(canvas, opts = {}) {
       get values() { return { team: layer.team?.text || '', name: layer.name?.text || '', number: layer.bnum?.text || '', font: layer.team?.font ?? 0 }; },
       set({ team, name, number, font, motion: m } = {}) {
         if (motion) endMotion();
+        if (font != null) for (const k in layer) layer[k].italic = false;
         if (team != null && layer.team) layer.team.text = team;
         if (name != null && layer.name) layer.name.text = name;
-        if (number != null) { layer.fnum && (layer.fnum.text = number); layer.bnum && (layer.bnum.text = number); }
+        if (number != null) { layer.fnum && (layer.fnum.text = number, layer.fnum.hidden = false); layer.bnum && (layer.bnum.text = number); }
         if (font != null) for (const k in layer) layer[k].font = font;
         contrast(); repaint(true); if (m) playMotion(m);
       },
@@ -488,6 +525,8 @@ export async function createStage(canvas, opts = {}) {
     },
     FONTS,
     pause(v) { running = !v; },
+    /** Hanya untuk render poster/test: latar warna polos & sembunyikan model. */
+    debug: opts.lock ? { bg(hex) { scene.background = new THREE.Color(hex); finish && (finish.uniforms.uGrain.value = 0); floorBlob.visible = false; floor.visible = false; }, hideGarment(v) { g.scene.visible = !v; } } : null,
     renderOnce(ms = 0) { draw(performance.now() + ms, .016); },
     dispose() {
       destroyed = true; ro.disconnect(); io.disconnect(); host.removeEventListener('pointermove', onMove); host.removeEventListener('pointerleave', onLeave);

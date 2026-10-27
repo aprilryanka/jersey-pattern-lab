@@ -23,12 +23,14 @@ export async function initStage(root) {
   let mod, stage;
   try {
     mod = await import('./stage.js');
-    stage = await mod.createStage($('#stageCanvas', root), testTier ? { tier: testTier, lock: true } : {});
+    stage = await mod.createStage($('#stageCanvas', root), { ...(testTier ? { tier: testTier, lock: true } : {}), design: reduced.matches || qs.get('design') ? (qs.get('design') || 'bali') : 'japan' });
   } catch (e) {
     console.warn('Panggung 3D tidak bisa dimuat, memakai tampilan statis.', e);
     root.classList.add('static'); status.hidden = true; return;
   }
   status.hidden = true; root.classList.add('ready'); if (testMode) stage.pause(true);
+  const tagEl = $('#stageTag', root), TAGS = { japan: 'Advanced · seed 586840', jakarta: 'Advanced · seed 118103', bali: 'Basic · Halftone' };
+  function setTag(id) { if (tagEl) { tagEl.textContent = TAGS[id] || ''; tagEl.classList.toggle('on', !!TAGS[id]); } }
   root.style.setProperty('--len', WEIGHTS.reduce((a, b) => a + b, 0));
 
   /* ---------- keyframe kamera per bab ---------- */
@@ -78,6 +80,7 @@ export async function initStage(root) {
   });
   $('#btnRand').onclick = () => { stage.pattern.randomize(); syncPattern(); };
   function syncPattern(keepInputs) {
+    setTag(stage.design.current);
     const st = stage.pattern.state;
     $$('button', styleBox).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === st.style)));
     $$('button', palBox).forEach(b => b.setAttribute('aria-pressed', String(BASIC_PALETTES[+b.dataset.i].every((c, k) => c.toLowerCase() === st.colors[k].toLowerCase()))));
@@ -155,6 +158,7 @@ export async function initStage(root) {
       if (i >= 3) ensureFonts();
     }
     hint.style.setProperty('--h', String(1 - smooth(p * 22)));
+    tagEl && tagEl.style.setProperty('--h', String(1 - smooth(p * 22)));
     if (i === 4 && u > .22 && !auto4 && selMotion.value !== 'none') { auto4 = true; setTimeout(() => stage.text.play(selMotion.value), 380); }
     if (i < 3) auto4 = false;
   }
@@ -164,6 +168,18 @@ export async function initStage(root) {
   update();
   // tampilan awal langsung di posisi bab (tanpa melayang dari default)
   stage.setShot(lastGoal, true); update();
+
+  /* ---------- showcase desain hero: JAPAN (seed 586840) -> JAKARTA (seed 118103) -> BALI (Basic Halftone) ---------- */
+  const SEQ = [['jakarta', 3600], ['bali', 7400]];
+  setTag(stage.design.current);
+  if (!testMode && !reduced.matches && stage.design.current === 'japan') {
+    let expect = 'japan';
+    SEQ.forEach(([id, at]) => setTimeout(async () => {
+      if (stage.design.current !== expect) return; // pengunjung sudah mengubah pola sendiri
+      await stage.design.show(id); expect = id; setTag(id);
+      if (id === 'bali') syncPattern();
+    }, at));
+  }
   if (testMode) { window.__stage = stage; window.__snap = () => { stage.setShot(override || lastGoal, true); stage.renderOnce(window.__ms || 0); }; }
   return stage;
 }
