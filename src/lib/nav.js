@@ -1,5 +1,6 @@
 import { getMe, planOf, isAdmin, signOut } from './supabase.js';
 import { E } from './ui.js';
+import { themeButton } from './theme.js';
 
 export const LOGO_SVG = '<svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="var(--accent)"/><path d="M20 14l-10 7 5 9 5-3v23h24V27l5 3 5-9-10-7h-6a6 6 0 0 1-12 0z" fill="var(--accent-ink)"/><path d="M26 30l6 8 6-8" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round"/></svg>';
 
@@ -42,7 +43,7 @@ export async function mountNav(current, { tag } = {}) {
   const nav = E('nav', { 'aria-label': 'Navigasi utama' },
     links.map(([id, href, label]) => E('a', { href, text: label, 'aria-current': id === current ? 'page' : null })));
 
-  const act = E('div', { className: 'act' });
+  const act = E('div', { className: 'act' }, themeButton());
   if (me) {
     act.append(
       E('span', { className: 'chip', text: plan === 'pro' ? (isAdmin(me) ? 'ADMIN' : 'PRO') : 'GRATIS' }),

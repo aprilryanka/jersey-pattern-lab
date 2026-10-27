@@ -12,7 +12,7 @@ import { Viewer3D } from '../studio/viewer3d.js';
 import { Editor2D } from '../studio/editor2d.js';
 import { exportPattern, exportSewingSVG, exportSewingPNG } from '../studio/exporter.js';
 import { startTour, tourSeen } from '../studio/tour.js';
-import { initTrace } from '../studio/trace-ui.js';
+import { VEC_DEFAULT, VEC_SLIDERS, vecSource, vectorize } from '../studio/vectorize.js';
 import DEFAULT_PANELS from '../studio/default-panels.json';
 
 const fmt = (n, d = 1) => (+n).toFixed(d).replace('.', ',');
@@ -117,9 +117,10 @@ async function useModel(m, keepLayers = true) {
     const g = await viewer.setModel(m.glb_url);
     const lay = layoutModel(m.panels, g.uv);
     model = m; L = lay;
-    sc = TEX_PX / L.Wmm;
+    // jaga tinggi atlas di bawah batas tekstur GPU (kalau lewat, model 3D tampil putih)
+    sc = Math.min(TEX_PX / L.Wmm, Math.min(viewer.maxTex, 8192) / L.Hmm);
     if (!base) { base = E('canvas'); atlas = E('canvas'); bctx = base.getContext('2d'); actx = atlas.getContext('2d'); }
-    base.width = atlas.width = TEX_PX; base.height = atlas.height = Math.round(L.Hmm * sc);
+    base.width = atlas.width = Math.round(L.Wmm * sc); base.height = atlas.height = Math.round(L.Hmm * sc);
     // pindahkan layer ke panel padanannya (berdasarkan peran) bila model berganti
     const roleOf = id => (L.byId[id] ? null : 'x');
     for (const Ly of S.layers) if (roleOf(Ly.panel)) { const want = Ly._role || 'front'; const p = L.panels.find(q => q.role === want) || L.panels.find(q => !q.rib); Ly.panel = p.id; Ly.lx = clamp(Ly.lx, 0, p.w); Ly.ly = clamp(Ly.ly, 0, p.h); }
@@ -366,22 +367,76 @@ for (const [id, f] of [['knit', v => fmt(v) + ' mm'], ['normal', v => fmt(v, 2)]
   $('#' + id).oninput = e => { S.fabric[id] = +e.target.value; $('#v' + id[0].toUpperCase() + id.slice(1)).textContent = f(S.fabric[id]); viewer.applyFabric(S.fabric); markDirty(); };
 }
 
-/* ---------------- Trace (vectorize) ---------------- */
-function addImageSrc(src, name, role, o) {
-  const p = panelByRole(role), img = new Image();
-  img.onload = () => {
-    const Ly = { id: 'l' + (layerSeq++), type: 'image', panel: p.id, _role: role, src, img, name, rot: 0, opacity: 1, ...o, lx: o.lx(p), ly: o.ly(p) };
-    S.layers.push(Ly); selId = Ly.id; syncLayers(); invalidateLayers(); setTab('elements'); toast('Logo vektor ditambahkan. Seret di pola 2D untuk memindahkan.');
-  };
-  img.src = src;
+/* ---------------- Export SVG pattern (vectorize) ---------------- */
+// Sama seperti versi sebelumnya: sumber = pattern yang sedang dibuat. Pratinjau gratis (bertanda air),
+// unduh / salin SVG khusus Pro.
+let vecOpt = { ...VEC_DEFAULT }, vecKind = 'pattern';
+function watermark(ctx, w, h) {
+  ctx.save(); ctx.globalAlpha = .5; ctx.fillStyle = '#ffffff'; ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = Math.max(1, w / 900);
+  ctx.font = `600 ${Math.round(w / 22)}px Inter, sans-serif`; ctx.textAlign = 'center';
+  ctx.translate(w / 2, h / 2); ctx.rotate(-Math.PI / 6);
+  const step = w / 4;
+  for (let y = -h; y < h; y += step * .6) for (let x = -w; x < w; x += step * 1.4) { ctx.strokeText('JERSEY PATTERN LAB', x, y); ctx.fillText('JERSEY PATTERN LAB', x, y); }
+  ctx.restore();
 }
-const trace = initTrace({
-  getPalette: () => S.basic.colors,
-  isMotifActive: () => S.basic.style === 'trace',
-  onAddLayer: (src, name) => addImageSrc(src, name, 'front', { w: 90, lx: p => p.w / 2, ly: p => p.h * .5 }),
-  onMotif: T => { S.basic.trace = T; S.basic.style = 'trace'; if (S.mode !== 'basic') setMode('basic'); syncBasic(); invalidateBase(); },
-  onDownload: (svg, name) => { if (!pro) { exportUpsell(); return; } download(new Blob([svg], { type: 'image/svg+xml' }), `jpl-trace-${name}.svg`); },
-});
+function openVector() {
+  let result = null, busy = false, url = null;
+  const src = E('select', { className: 'in' },
+    E('option', { value: 'pattern', text: S.mode === 'advanced' ? 'Pattern saat ini (tile seamless)' : 'Pattern saat ini (area 60 × 60 cm)', selected: vecKind === 'pattern' }),
+    E('option', { value: 'sheet', text: 'Pola jahit lengkap (semua panel + teks)', selected: vecKind === 'sheet' }));
+  src.onchange = () => { vecKind = src.value; };
+  const sliders = VEC_SLIDERS.map(([k, label, mn, mx, st, f]) => {
+    const v = E('span', { className: 'v', text: f(vecOpt[k]) });
+    const r = E('input', { type: 'range', min: mn, max: mx, step: st, value: vecOpt[k] });
+    r.oninput = () => { vecOpt[k] = +r.value; v.textContent = f(vecOpt[k]); };
+    return E('label', { className: 'field' }, label, v, r);
+  });
+  const go = E('button', { className: 'btn primary', type: 'button', text: 'Buat vector' });
+  const img = E('img', { alt: 'Hasil vektor SVG' });
+  const stat = E('p', { className: 'hint', role: 'status', 'aria-live': 'polite' });
+  const dl = E('button', { className: 'btn primary', type: 'button', text: 'Unduh SVG' });
+  const cp = E('button', { className: 'btn', type: 'button', text: 'Salin kode SVG' });
+  const up = E('a', { className: 'btn primary', href: me ? '/billing' : '/login?mode=signup&next=/billing', text: 'Unduh SVG khusus member Pro' });
+  const actions = E('div', { className: 'row' }, ...(pro ? [dl, cp] : [up]));
+  const out = E('div', { className: 'vecout', hidden: true }, E('div', { className: 'vecpv checker' }, img), stat, actions);
+  const body = E('div', { className: 'vecmod' },
+    E('p', { className: 'hint', style: { margin: 0 }, text: 'Hasilnya berwarna datar (posterize), bukan foto asli. Makin banyak warna dan resolusi, makin detail tapi file makin besar.' }),
+    E('label', { className: 'field' }, 'Sumber', src), ...sliders, go, out);
+  const m = modal('Export SVG pattern', body, { wide: true, onClose: () => { url && URL.revokeObjectURL(url); } });
+  go.onclick = () => {
+    if (busy) return; busy = true; go.disabled = true; go.textContent = 'Membuat vector…'; stat.textContent = '';
+    flushTexture();
+    setTimeout(() => {
+      try {
+        const s = vecSource({ kind: vecKind, S, adv, atlas, res: vecOpt.res, blur: vecOpt.blur, texSize: S.mode === 'advanced' ? 1024 : 560 });
+        result = vectorize(s, vecOpt);
+        if (S.mode === 'advanced') invalidateBase();
+        if (!result) { stat.textContent = 'Tidak ada bentuk yang bisa diproses.'; return; }
+        out.hidden = false;
+        stat.textContent = `${result.colors} warna · ${result.paths} lapis · ${result.kb.toLocaleString('id-ID')} KB · ${result.w} × ${result.h}`;
+        url && URL.revokeObjectURL(url);
+        url = URL.createObjectURL(new Blob([result.svg], { type: 'image/svg+xml' }));
+        if (pro) img.src = url;
+        else {
+          const im = new Image();
+          im.onload = () => {
+            const c = E('canvas', { width: result.w, height: result.h }), x = c.getContext('2d');
+            x.drawImage(im, 0, 0); watermark(x, result.w, result.h); img.src = c.toDataURL('image/jpeg', .8);
+            URL.revokeObjectURL(url); url = null; result.svg = '';
+          };
+          im.src = url;
+        }
+      } catch (e) { console.error(e); stat.textContent = 'Gagal membuat vector: ' + (e.message || e); }
+      finally { busy = false; go.disabled = false; go.textContent = 'Buat ulang vector'; }
+    }, 40);
+  };
+  dl.onclick = () => { if (!pro || !result?.svg) return; download(new Blob([result.svg], { type: 'image/svg+xml' }), `jpl-pattern-vector-${vecKind}.svg`); toast('SVG diunduh'); };
+  cp.onclick = async () => { if (!pro || !result?.svg) return; try { await navigator.clipboard.writeText(result.svg); toast('Kode SVG disalin'); } catch { toast('Tidak bisa menyalin, pakai Unduh SVG'); } };
+  return m;
+}
+$('#btnVector').onclick = openVector;
+// ganti tema: kanvas 2D & pane pattern membaca token warna, jadi gambar ulang
+document.addEventListener('themechange', () => { editor.invalidate(); patDirty = true; });
 
 /* ---------------- simpan / muat ---------------- */
 function serialize() {
@@ -392,7 +447,7 @@ function serialize() {
 }
 async function deserialize(pc = {}, es = {}) {
   if (pc.basic) S.basic = { ...S.basic, ...pc.basic };
-  if (S.basic.trace && S.basic.trace.src) { const T = S.basic.trace; T.img = new Image(); await new Promise(r => { T.img.onload = T.img.onerror = r; T.img.src = T.src; }); trace.syncMotif(T); } else { S.basic.trace = undefined; trace.syncMotif(null); }
+  if (S.basic.trace && S.basic.trace.src) { const T = S.basic.trace; T.img = new Image(); await new Promise(r => { T.img.onload = T.img.onerror = r; T.img.src = T.src; }); } else { S.basic.trace = undefined; }
   if (pc.edit) S.edit = { ...S.edit, ...pc.edit };
   Object.assign(S, { panelFill: es.panelFill || {}, ribColor: es.ribColor || S.ribColor, fabric: { ...S.fabric, ...(es.fabric || {}) }, bg: { ...S.bg, ...(es.bg || {}) }, shadow: es.shadow !== false });
   S.layers = (es.layers || []).map(l => ({ ...l }));
@@ -496,7 +551,8 @@ $('#btnExport').onclick = () => {
   const bShot = E('button', { className: 'btn primary', text: 'Unduh snapshot 3D' });
   const body = E('div', { className: 'xgrid' },
     E('div', { className: 'xcard' }, E('h4', { text: 'Pattern' }), E('p', { text: S.mode === 'advanced' ? 'Tile pattern Advanced yang bisa diulang tanpa sambungan.' : 'Motif Basic area 60 × 60 cm.' }),
-      E('label', { className: 'field' }, 'Ukuran', pSize), E('label', { className: 'field' }, 'Format', pFmt), bPat),
+      E('label', { className: 'field' }, 'Ukuran', pSize), E('label', { className: 'field' }, 'Format', pFmt), bPat,
+      E('button', { className: 'btn', type: 'button', text: 'Export SVG (vektor)', on: { click: () => { m.close(); openVector(); } } })),
     E('div', { className: 'xcard' }, E('h4', { text: 'Pola jahit' }), E('p', { text: `Semua ${L?.panels.length || ''} panel ukuran ${model?.size_label || 'M'} dengan desain, garis potong, dan arah serat. Cetak 100% tanpa "fit to page".` }),
       E('label', { className: 'field' }, 'Format', sFmt), E('label', { className: 'field' }, 'Resolusi gambar', sDpi), bSew),
     E('div', { className: 'xcard' }, E('h4', { text: 'Snapshot 3D' }), E('p', { text: `Latar mengikuti pengaturan Tampilan (${S.bg.mode === 'transparent' ? 'transparan' : S.bg.mode === 'solid' ? 'polos' : 'studio'}).` }),
@@ -540,7 +596,7 @@ function protectImages() {
 }
 
 /* ---------------- tur ---------------- */
-$('#btnTour').onclick = () => startTour(undefined, { onTab: t => setTab(t === 'view' ? 'view' : t) });
+$('#btnTour').onclick = () => startTour(undefined, { onTab: t => setTab(t === 'vector' ? 'pattern' : t) });
 
 /* ---------------- boot ---------------- */
 const boot = (p, msg) => { const b = $('#bootBar'); if (b) b.style.width = Math.round(p * 100) + '%'; if (msg) $('#bootMsg').textContent = msg; };
@@ -571,5 +627,5 @@ initArc();
   await Promise.race([fontsReady, new Promise(r => setTimeout(r, 2500))]);
   await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
   bootDone();
-  if (!tourSeen()) setTimeout(() => startTour(undefined, { onTab: setTab }), 900);
+  if (!tourSeen()) setTimeout(() => startTour(undefined, { onTab: t => setTab(t === 'vector' ? 'pattern' : t) }), 900);
 })();

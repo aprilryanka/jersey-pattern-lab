@@ -160,3 +160,16 @@ h1, h2, h3 { text-wrap: balance; }
 .modal .card { animation: pop-in .28s cubic-bezier(.2, .9, .3, 1.2) both; }
 @keyframes fade-in { from { opacity: 0; } }
 @keyframes pop-in { from { opacity: 0; transform: translateY(14px) scale(.97); } }
+
+/* tema: tombol Arc theme switcher (ikon 38px) + transisi reveal */
+.theme-switch { width: 38px; height: 38px; flex: none; display: inline-grid; place-items: center; padding: 0; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; position: relative; }
+@media (hover: hover) and (pointer: fine) { .theme-switch:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); } }
+.theme-switch:focus { outline: none; }
+.theme-switch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.theme-switch svg { grid-area: 1 / 1; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform .35s cubic-bezier(.2, .9, .3, 1.2), opacity .2s, filter .2s; }
+.theme-switch[data-mode="light"] .i-moon, .theme-switch[data-mode="dark"] .i-sun { opacity: 0; transform: rotate(-90deg) scale(.5); filter: blur(2px); }
+@media (prefers-reduced-motion: reduce) { .theme-switch svg { transition: opacity .15s; transform: none !important; filter: none !important; } }
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+.theme-anim::view-transition-new(root) { animation: theme-reveal .55s cubic-bezier(.22, .61, .36, 1); }
+@keyframes theme-reveal { from { clip-path: circle(0 at var(--tx, 50%) var(--ty, 0)); } to { clip-path: circle(150vmax at var(--tx, 50%) var(--ty, 0)); } }
+.pill .theme-switch { width: 32px; height: 32px; }

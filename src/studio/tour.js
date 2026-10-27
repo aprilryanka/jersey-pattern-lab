@@ -6,7 +6,7 @@ export const STUDIO_TOUR = [
   ['motif', 'Pilih dan acak motif', 'Klik motif untuk memakainya. Tombol Acak semua mengganti motif, warna, dan bentuk sekaligus.'],
   ['tab-edit', 'Edit pattern', 'Atur skala, rotasi, posisi, dan cermin pattern di seluruh jersey. Kamu juga bisa membuat panel tertentu (misalnya lengan atau rib) berwarna polos.'],
   ['tab-elements', 'Teks, logo, sponsor', 'Tambah nama, nomor, logo tim, dan sponsor. Upload PNG transparan untuk hasil terbaik.'],
-  ['tab-trace', 'Trace gambar ke vektor', 'Upload logo atau gambar, lalu ubah jadi SVG vektor dengan preset siap pakai. Hasilnya bisa jadi logo di dada atau motif ulang di seluruh jersey.'],
+  ['tab-vector', 'Export SVG', 'Ubah pattern yang sedang kamu buat jadi vektor SVG berwarna datar, siap dibuka di Illustrator, CorelDraw, atau Inkscape. Pratinjau gratis, unduh khusus Pro.'],
   ['pane2d', 'Pola jahit 2D', 'Ini panel pola jahit asli dari file DXF. Seret teks atau logo untuk memindahkan, tarik kotak kecil di sudutnya untuk mengubah ukuran. Scroll atau pinch untuk zoom.'],
   ['pane3d', 'Pratinjau 3D', 'Semua perubahan langsung tampil di model 3D. Seret untuk memutar, scroll untuk zoom, atau pilih sudut kamera.'],
   ['layout', 'Mode tampilan', 'Pilih Split, Pola, 3D, atau Pattern. Di HP, pakai satu tampilan saja agar lebih ringan.'],

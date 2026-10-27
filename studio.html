@@ -2,6 +2,8 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
+<script>try{var t=localStorage.getItem("jpl-theme");if(t==="dark"||t==="light")document.documentElement.dataset.theme=t}catch(e){}</script>
+
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Studio · Jersey Pattern Lab</title>
 <meta name="description" content="Desain jersey dengan generator pattern, lihat langsung di 3D, dan export pola jahit skala 1:1.">
@@ -74,7 +76,6 @@
       <button role="tab" type="button" data-tab="pattern" aria-selected="true">Pattern</button>
       <button role="tab" type="button" data-tab="edit" aria-selected="false" data-tour="tab-edit">Edit</button>
       <button role="tab" type="button" data-tab="elements" aria-selected="false" data-tour="tab-elements">Elemen</button>
-      <button role="tab" type="button" data-tab="trace" aria-selected="false" data-tour="tab-trace">Trace</button>
       <button role="tab" type="button" data-tab="view" aria-selected="false" data-tour="tab-view">Tampilan</button>
     </div>
 
@@ -112,6 +113,11 @@
         </div>
         <div id="advHost" class="adv"></div>
       </div>
+      <section class="vecbox" data-tour="tab-vector">
+        <h3>Export SVG</h3>
+        <p class="hint">Ubah pattern yang sedang kamu buat jadi vektor SVG berwarna datar. Bisa diperbesar tanpa pecah dan dibuka di Illustrator, CorelDraw, atau Inkscape.</p>
+        <button class="btn" type="button" id="btnVector">Buat SVG dari pattern</button>
+      </section>
     </div>
 
     <!-- EDIT PATTERN -->
@@ -178,52 +184,6 @@
           </div>
         </div>
       </section>
-    </div>
-
-    <!-- TRACE -->
-    <div class="tabpane" data-pane="trace" hidden>
-      <section>
-        <h3>Trace gambar ke vektor</h3>
-        <label class="drop" id="trDrop"><input type="file" accept="image/*" id="trFile" class="sr-only"><b>Pilih gambar</b><span>atau seret ke sini. PNG, JPG, WEBP, maksimal 8 MB</span></label>
-        <div class="trcmp" id="trCmp" hidden>
-          <figure><img id="trSrc" alt="Gambar asli"><figcaption>Asli</figcaption></figure>
-          <figure class="checker"><img id="trOut" alt="Hasil vektor"><figcaption>Vektor · <span id="trInfo"></span></figcaption></figure>
-        </div>
-      </section>
-      <div id="trCtl" hidden>
-        <section>
-          <h3>Preset</h3>
-          <div class="chips" id="trPresets"></div>
-        </section>
-        <section>
-          <h3>Pengaturan</h3>
-          <div class="seg wide" role="group" aria-label="Mode trace">
-            <button type="button" data-trmode="color" aria-pressed="true">Berwarna</button>
-            <button type="button" data-trmode="mono" aria-pressed="false">Satu warna</button>
-          </div>
-          <label class="field" id="trColorsRow">Jumlah warna <span class="v" id="vColors"></span><input type="range" id="trColors" min="2" max="10" step="1"></label>
-          <label class="field" id="trThrRow">Ambang terang/gelap <span class="v" id="vThr"></span><input type="range" id="trThr" min="0" max="240" step="5"></label>
-          <label class="field" id="trInkRow">Warna bentuk<input type="color" id="trInk" value="#111111"></label>
-          <label class="field">Detail <span class="v" id="vDetail"></span><input type="range" id="trDetail" min="120" max="520" step="20"></label>
-          <label class="field">Kehalusan tepi <span class="v" id="vSmooth"></span><input type="range" id="trSmooth" min="0" max="100" step="5"></label>
-          <label class="field">Buang bintik <span class="v" id="vSpeckle"></span><input type="range" id="trSpeckle" min="0" max="60" step="1"></label>
-          <label class="chk"><input type="checkbox" id="trDropBg" checked> Hapus latar putih atau transparan</label>
-          <label class="chk"><input type="checkbox" id="trInvert"> Balik terang dan gelap</label>
-          <label class="chk" id="trPalRow"><input type="checkbox" id="trPal"> Pakai warna palet jersey</label>
-        </section>
-        <section id="trAct">
-          <h3>Pakai hasilnya</h3>
-          <button class="btn primary" type="button" id="trAddLayer" disabled>Tambah sebagai logo di dada</button>
-          <button class="btn" type="button" id="trMotif" disabled>Jadikan motif jersey</button>
-          <button class="btn sm" type="button" id="trDownload" disabled>Unduh SVG</button>
-          <div id="trMotifOpts" hidden>
-            <label class="field">Ukuran ulangan <span class="v" id="vTile">90 mm</span><input type="range" id="trTile" min="30" max="220" step="5" value="90"></label>
-            <label class="field">Jarak antar bentuk <span class="v" id="vGap">12%</span><input type="range" id="trGap" min="0" max="60" step="2" value="12"></label>
-            <label class="chk"><input type="checkbox" id="trHalf" checked> Susun selang-seling</label>
-          </div>
-          <p class="hint">Motif memakai warna dasar dari palet di tab Pattern. Edit pattern (skala, rotasi, geser) tetap berlaku.</p>
-        </section>
-      </div>
     </div>
 
     <!-- TAMPILAN -->

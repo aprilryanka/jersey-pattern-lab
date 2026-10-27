@@ -81,7 +81,7 @@ export function matchPanels(panels, meshInfo) {
   const torso = byArea.slice(0, 2);
   for (const p of res) {
     const w = p.bb.maxX - p.bb.minX, h = p.bb.maxY - p.bb.minY, c = p.mesh >= 0 ? meshInfo[p.mesh].center : { x: 0, z: 0 };
-    if (Math.min(w, h) <= 40) { p.role = 'rib'; p.label = 'Rib ' + (c.z >= 0 ? 'depan' : 'belakang') + (Math.abs(c.x) > .02 ? (c.x > 0 ? ' kiri' : ' kanan') : ''); }
+    if (Math.min(w, h) <= 60 && Math.max(w, h) / Math.max(1, Math.min(w, h)) >= 4) { p.role = 'rib'; p.label = 'Rib ' + (c.z >= 0 ? 'depan' : 'belakang') + (Math.abs(c.x) > .02 ? (c.x > 0 ? ' kiri' : ' kanan') : ''); }
     else if (torso.includes(p)) { p.role = c.z >= 0 ? 'front' : 'back'; p.label = p.role === 'front' ? 'Depan' : 'Belakang'; }
     else if (Math.abs(c.x) > .12) { p.role = 'sleeve'; p.label = 'Lengan ' + (c.x > 0 ? 'kiri' : 'kanan'); }
     else { p.role = 'other'; p.label = p.piece; }
