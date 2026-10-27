@@ -140,7 +140,7 @@ input[type=color] { width: 100%; height: 32px; padding: 2px; border: 1px solid v
 .xcard h4 { margin: 0; font: 700 16px/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; }
 .xcard p { margin: 0; font-size: 12px; color: var(--muted); }
 .xcard .tag { font: 600 9px/1 var(--f-mono); padding: 3px 5px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); margin-left: 4px; vertical-align: 2px; }
-@media (max-width: 760px) { .xgrid { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .xgrid { grid-template-columns: 1fr; } .seg.wide button { min-height: 44px; font-size: 13px; padding: 10px 14px; } .seg .pro { font-size: 10px; } }
 
 .projgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
 .projgrid .pc { border: 1px solid var(--line); border-radius: var(--r-m); overflow: hidden; background: var(--bg); display: grid; }
@@ -178,6 +178,13 @@ input[type=color] { width: 100%; height: 32px; padding: 2px; border: 1px solid v
 .upsell li::before { content: "✓"; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
 /* akun gratis: cegah tekan-lama simpan gambar (iOS/Android) */
 body.protect canvas, body.protect .styles, body.protect .adv { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+
+/* ---------- studio CTA cetak ---------- */
+.studio-cta { padding: 16px 14px; border-top: 1px solid var(--line); display: grid; gap: 8px; background: var(--bg); }
+.studio-cta-label { margin: 0; font-size: 12px; color: var(--muted); text-align: center; }
+.studio-cta-btn { display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--accent); color: var(--accent-ink); border: 0; border-radius: var(--r-m); padding: 12px 16px; font: 700 14px/1.2 var(--f-display); letter-spacing: .06em; text-transform: uppercase; text-decoration: none; min-height: 48px; transition: opacity .18s, transform .18s; }
+.studio-cta-btn:hover { opacity: .88; transform: translateY(-1px); }
+.studio-cta-btn:active { opacity: 1; transform: none; }
 
 /* ---------- motion ---------- */
 .tabpane:not([hidden]) { animation: tab-in .25s ease both; }

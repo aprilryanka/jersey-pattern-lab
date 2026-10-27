@@ -36,7 +36,7 @@ export async function initStage(root) {
   /* ---------- keyframe kamera per bab ---------- */
   const mobile = () => matchMedia('(max-width: 760px)').matches;
   function buildShots() {
-    const m = mobile(), wide = !m && innerWidth >= 1100, sx = m ? 0 : .2, sy = m ? .25 : 0, far = m ? 4.3 : 2.6, fit = stage.fitFlatDist(stage.aspect);
+    const m = mobile(), wide = !m && innerWidth >= 1100, sx = m ? 0 : .2, sy = m ? .18 : 0, far = m ? 3.0 : 2.6, fit = stage.fitFlatDist(stage.aspect);
     return [
       { az: 28, el: 5, d: far, ty: m ? 0 : .02, shiftX: sx, shiftY: sy, ap: 0, wind: 1 },
       { az: -24, el: 8, d: m ? .85 : .78, ty: .18, shiftX: m ? 0 : .22, shiftY: m ? .17 : 0, ap: .035, wind: .35 },
