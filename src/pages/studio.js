@@ -134,7 +134,13 @@ async function useModel(m, keepLayers = true) {
     $('#ov3d').hidden = true;
     invalidateBase();
   } catch (e) {
-    console.error(e);
+    console.error('Model gagal:', m.name, e);
+    // Coba model berikutnya di daftar (misal V2 gagal → fallback ke V1)
+    const idx = models.indexOf(m);
+    if (idx >= 0 && models[idx + 1]) {
+      console.warn('Mencoba model cadangan:', models[idx + 1].name);
+      return useModel(models[idx + 1], keepLayers);
+    }
     $('#ov3d').textContent = 'Model 3D gagal dimuat: ' + (e.message || e);
   }
 }
