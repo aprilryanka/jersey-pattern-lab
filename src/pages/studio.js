@@ -7,7 +7,7 @@ import { mountNav } from '../lib/nav.js';
 import { $, $$, E, toast, modal, download, withProgress, shrinkImage } from '../lib/ui.js';
 import { BASIC_STYLES, BASIC_PALETTES, drawBasicThumb, drawBasic } from '../studio/basic.js';
 import { initAdvanced } from '../studio/advanced.js';
-import { layoutModel, renderAtlas, renderLayers, FONTS } from '../studio/atlas.js';
+import { layoutModel, renderAtlas, renderLayers, FONTS, setImageReadyHandler } from '../studio/atlas.js';
 import { Viewer3D } from '../studio/viewer3d.js';
 import { Editor2D } from '../studio/editor2d.js';
 import { exportPattern, exportSewingSVG, exportSewingPNG } from '../studio/exporter.js';
@@ -37,6 +37,7 @@ let base, bctx, atlas, actx, sc = 1;
 
 /* ---------------- render pipeline ---------------- */
 let needBase = true, needLayers = true;
+setImageReadyHandler(() => invalidateBase());
 const invalidateBase = () => { needBase = true; needLayers = true; patDirty = true; markDirty(); };
 const invalidateLayers = () => { needLayers = true; markDirty(); };
 let layout = 'split', patDirty = true, patRep = 2;
@@ -262,16 +263,54 @@ $('#eSeam').onchange = e => { S.edit.seam = e.target.checked; invalidateBase(); 
 $('#eReset').onclick = () => { Object.assign(S.edit, { scale: 1, rot: 0, offX: 0, offY: 0, flip: false, seam: true, repeats: 2 }); syncEdit(); invalidateBase(); };
 $('#ribColor').oninput = e => { S.ribColor = e.target.value; buildPanelFills(); invalidateBase(); };
 
+const FILL_MODES = [['pattern', 'Pattern utama'], ['solid', 'Warna polos'], ['own', 'Pattern sendiri'], ['image', 'Upload gambar']];
+const rnd = a => a[Math.random() * a.length | 0];
+function newFill(mode, p, old = {}) {
+  if (mode === 'solid') return { mode, color: old.color || S.ribColor };
+  if (mode === 'own') return { mode, style: old.style || S.basic.style, colors: old.colors || [...S.basic.colors], seed: old.seed ?? (Math.random() * 99999 | 0), scale: old.scale || 1 };
+  if (mode === 'image') return { mode, src: old.src || '', fit: old.fit || 'cover', zoom: old.zoom || 1, tile: old.tile || 120, rot: old.rot || 0, color: old.color || '#ffffff' };
+  return { mode: 'pattern' };
+}
+function fillMore(p, f, commit, rebuild) {
+  const out = [];
+  const rng = (lab, key, min, max, step, fmtv = v => v) => { const o = E('output', { text: fmtv(f[key]) }); const i = E('input', { type: 'range', min, max, step, value: f[key], 'aria-label': lab + ' ' + p.label, on: { input: e => { f[key] = +e.target.value; o.textContent = fmtv(f[key]); commit(); } } }); return E('label', {}, E('span', {}, lab + ' ', o), i); };
+  if (f.mode === 'solid') out.push(E('label', {}, 'Warna', E('input', { type: 'color', value: f.color, 'aria-label': 'Warna ' + p.label, on: { input: e => { f.color = e.target.value; commit(); } } })));
+  if (f.mode === 'own') {
+    out.push(E('div', { className: 'row' },
+      E('select', { 'aria-label': 'Motif ' + p.label, on: { change: e => { f.style = e.target.value; commit(); } } }, BASIC_STYLES.map(([id, nm]) => E('option', { value: id, text: nm, selected: f.style === id }))),
+      E('button', { className: 'btn sm', type: 'button', text: 'Acak', title: 'Acak motif, warna, dan seed untuk panel ini', on: { click: () => { f.style = rnd(BASIC_STYLES.filter(s => s[0] !== 'solid'))[0]; f.colors = [...rnd(BASIC_PALETTES)]; f.seed = Math.random() * 99999 | 0; commit(); rebuild(); } } }),
+      E('button', { className: 'btn sm', type: 'button', text: 'Seed baru', on: { click: () => { f.seed = Math.random() * 99999 | 0; commit(); } } })));
+    out.push(E('div', { className: 'pf-cols' }, f.colors.map((c, i) => E('input', { type: 'color', value: c, 'aria-label': `Warna ${i + 1} ${p.label}`, on: { input: e => { f.colors[i] = e.target.value; commit(); } } }))));
+    out.push(rng('Skala', 'scale', .4, 2.5, .05, v => '×' + (+v).toFixed(2)));
+  }
+  if (f.mode === 'image') {
+    const file = E('input', { type: 'file', accept: 'image/*', 'aria-label': 'Upload gambar ' + p.label, on: { change: e => {
+      const fl = e.target.files[0]; if (!fl) return;
+      if (fl.size > 8e6) { toast('Gambar terlalu besar, maksimal 8 MB'); return; }
+      shrinkImage(fl, 1400, 'image/jpeg').then(({ dataUrl }) => { f.src = dataUrl; commit(); rebuild(); toast('Gambar dipasang di ' + p.label); }).catch(() => toast('Gambar tidak bisa dibaca'));
+    } } });
+    out.push(file);
+    if (f.src) {
+      out.push(E('div', { className: 'row' }, E('select', { 'aria-label': 'Mode gambar ' + p.label, on: { change: e => { f.fit = e.target.value; commit(); rebuild(); } } },
+        E('option', { value: 'cover', text: 'Penuhi panel', selected: f.fit !== 'tile' }), E('option', { value: 'tile', text: 'Ulang (pattern)', selected: f.fit === 'tile' })),
+        E('button', { className: 'btn sm', type: 'button', text: 'Hapus gambar', on: { click: () => { f.src = ''; commit(); rebuild(); } } })));
+      out.push(f.fit === 'tile' ? rng('Ukuran ulangan', 'tile', 20, 600, 5, v => v + ' mm') : rng('Zoom', 'zoom', 1, 4, .05, v => '×' + (+v).toFixed(2)));
+      out.push(rng('Putar', 'rot', -180, 180, 1, v => v + '°'));
+    }
+  }
+  return out;
+}
 function buildPanelFills() {
   const box = $('#panelFills'); box.innerHTML = '';
   if (!L) return;
   for (const p of L.panels) {
-    const f = S.panelFill[p.id] || (p.rib ? { mode: 'solid', color: S.ribColor } : { mode: 'pattern', color: S.basic.colors[0] });
-    const sel = E('select', { 'aria-label': 'Isi ' + p.label }, E('option', { value: 'pattern', text: 'Pattern', selected: f.mode === 'pattern' }), E('option', { value: 'solid', text: 'Warna polos', selected: f.mode === 'solid' }));
-    const col = E('input', { type: 'color', value: f.color || S.ribColor, 'aria-label': 'Warna ' + p.label, disabled: f.mode !== 'solid' });
-    const upd = () => { S.panelFill[p.id] = { mode: sel.value, color: col.value }; col.disabled = sel.value !== 'solid'; invalidateBase(); };
-    sel.onchange = upd; col.oninput = upd;
-    box.append(E('div', { className: 'pf', 'data-panel': p.id }, E('span', { text: p.label }), sel, col));
+    const f = S.panelFill[p.id] || (p.rib ? { mode: 'solid', color: S.ribColor } : { mode: 'pattern' });
+    const more = E('div', { className: 'pf-more' });
+    const rebuild = () => { more.replaceChildren(...fillMore(p, S.panelFill[p.id] || f, commit, rebuild)); };
+    const commit = () => { S.panelFill[p.id] = S.panelFill[p.id] || f; invalidateBase(); };
+    const sel = E('select', { 'aria-label': 'Isi ' + p.label, on: { change: e => { S.panelFill[p.id] = newFill(e.target.value, p, S.panelFill[p.id] || f); invalidateBase(); rebuild(); } } }, FILL_MODES.map(([id, nm]) => E('option', { value: id, text: nm, selected: f.mode === id })));
+    box.append(E('div', { className: 'pf', 'data-panel': p.id }, E('div', { className: 'pf-h' }, E('span', { text: p.label }), sel), more));
+    rebuild();
   }
 }
 function highlightFill(id) {

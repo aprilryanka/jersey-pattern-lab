@@ -78,7 +78,9 @@ export function matchPanels(panels, meshInfo) {
   });
   const body = res.filter(p => Math.min(p.bb.maxX - p.bb.minX, p.bb.maxY - p.bb.minY) > 40);
   const byArea = [...body].sort((a, b) => b.area - a.area);
-  const torso = byArea.slice(0, 2);
+  // badan = semua panel non-rib yang mesh-nya dekat tengah (mendukung pola yang dipecah jadi banyak panel)
+  const torsoC = body.filter(p => p.mesh >= 0 && Math.abs(meshInfo[p.mesh].center.x) <= .12);
+  const torso = torsoC.length >= 2 ? torsoC : byArea.slice(0, 2);
   for (const p of res) {
     const w = p.bb.maxX - p.bb.minX, h = p.bb.maxY - p.bb.minY, c = p.mesh >= 0 ? meshInfo[p.mesh].center : { x: 0, z: 0 };
     if (Math.min(w, h) <= 60 && Math.max(w, h) / Math.max(1, Math.min(w, h)) >= 4) { p.role = 'rib'; p.label = 'Rib ' + (c.z >= 0 ? 'depan' : 'belakang') + (Math.abs(c.x) > .02 ? (c.x > 0 ? ' kiri' : ' kanan') : ''); }
@@ -87,6 +89,7 @@ export function matchPanels(panels, meshInfo) {
     else { p.role = 'other'; p.label = p.piece; }
   }
   // pastikan satu depan & satu belakang
+  for (const r of ['front', 'back']) { const g = torso.filter(p => p.role === r); if (g.length > 1) g.forEach((p, i) => { p.label = (r === 'front' ? 'Depan ' : 'Belakang ') + (i + 1); }); }
   if (torso.length === 2 && torso[0].role === torso[1].role) { torso[1].role = torso[0].role === 'front' ? 'back' : 'front'; torso[1].label = torso[1].role === 'front' ? 'Depan' : 'Belakang'; }
   const used = {};
   for (const p of res) { const base = { front: 'front', back: 'back', sleeve: 'sleeve', rib: 'rib', other: 'panel' }[p.role]; used[base] = (used[base] || 0) + 1; p.id = base + used[base]; }

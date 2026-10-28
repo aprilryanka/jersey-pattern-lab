@@ -101,6 +101,37 @@ function drawLayer(ctx, L) {
 }
 
 
+/* ---- isi per panel: pattern sendiri / gambar upload (dalam koordinat lokal panel, mm, y ke bawah) ---- */
+const IMG = new Map();
+let imgReady = null;
+export const setImageReadyHandler = fn => { imgReady = fn; };
+function getImg(src) {
+  if (!src) return null;
+  let e = IMG.get(src);
+  if (!e) { e = { img: new Image(), ok: false }; e.img.onload = () => { e.ok = true; imgReady && imgReady(); }; e.img.src = src; IMG.set(src, e); }
+  return e.ok ? e.img : null;
+}
+function drawPanelOwn(ctx, L, p, f, sc) {
+  ctx.setTransform(sc, 0, 0, sc, (p.bb.minX - L.uMin) * sc, (L.vTop - p.bb.maxY) * sc);
+  const r = { x0: -8, y0: -8, x1: p.w + 8, y1: p.h + 8 };
+  if (f.mode === 'own') {
+    drawBasic(ctx, r, { style: f.style || 'chevron', colors: f.colors || ['#0b3d91', '#f2b705', '#ffffff'], seed: f.seed | 0, scale: f.scale || 1, gh: p.h });
+    return;
+  }
+  ctx.fillStyle = f.color || '#ffffff'; ctx.fillRect(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0);
+  const img = getImg(f.src); if (!img) return;
+  ctx.save();
+  ctx.translate(p.w / 2 + (f.offX || 0), p.h / 2 + (f.offY || 0)); ctx.rotate((f.rot || 0) * Math.PI / 180);
+  if (f.fit === 'tile') {
+    const k = (f.tile || 120) / img.width, pt = ctx.createPattern(img, 'repeat');
+    pt.setTransform(new DOMMatrix([k, 0, 0, k, 0, 0])); ctx.fillStyle = pt; ctx.fillRect(-3000, -3000, 6000, 6000);
+  } else {
+    const k = Math.max(p.w / img.width, p.h / img.height) * (f.zoom || 1);
+    ctx.scale(k, k); ctx.drawImage(img, -img.width / 2, -img.height / 2);
+  }
+  ctx.restore();
+}
+
 /** Isi panel dengan sumber pattern aktif (Basic/Advanced) dalam ruang pola. */
 function fillPattern(ctx, L, p, S, adv) {
   const seam = S.edit.seam !== false;
@@ -141,6 +172,7 @@ export function renderAtlas(ctx, L, S, adv, sc, opts = {}) {
     const x0 = p.bb.minX - a.ax, y0 = a.ay - p.bb.maxY;
     ctx.beginPath(); ctx.rect(x0 - 6, y0 - 6, p.w + 12, p.h + 12); ctx.clip();
     if (fill.mode === 'solid') { ctx.fillStyle = fill.color || S.ribColor; ctx.fillRect(x0 - 6, y0 - 6, p.w + 12, p.h + 12); }
+    else if (fill.mode === 'own' || fill.mode === 'image') drawPanelOwn(ctx, L, p, fill, sc);
     else fillPattern(ctx, L, p, S, adv);
     ctx.restore();
   }

@@ -117,9 +117,17 @@ input[type=color] { width: 100%; height: 32px; padding: 2px; border: 1px solid v
 .ref span { font-size: 11px; }
 
 .panel-fills { display: grid; gap: 6px; }
-.pf { display: grid; grid-template-columns: 1fr 110px 40px; gap: 6px; align-items: center; padding: 4px 6px; border-radius: var(--r-s); border: 1px solid transparent; }
+.pf { display: block; padding: 6px; border-radius: var(--r-s); border: 1px solid transparent; }
+.pf-h { display: grid; grid-template-columns: 1fr 140px; gap: 6px; align-items: center; }
+.pf-more { display: grid; gap: 8px; margin-top: 8px; padding: 8px; border-radius: var(--r-s); background: var(--bg); border: 1px solid var(--line); }
+.pf-more:empty { display: none; }
+.pf-more .row { align-items: center; }
+.pf-more label { display: grid; gap: 3px; font-size: 12px; color: var(--muted); min-width: 0; }
+.pf-more input[type=range] { width: 100%; }
+.pf-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.pf-cols input[type=color] { width: 100%; }
 .pf.sel { border-color: var(--accent); background: var(--accent-soft); }
-.pf span { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pf-h span { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pf select { padding: 4px 6px; border: 1px solid var(--line); border-radius: var(--r-s); background: var(--bg); font-size: 12px; }
 .pf input[type=color] { height: 26px; }
 

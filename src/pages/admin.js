@@ -192,14 +192,18 @@ async function models() {
       E('div', { className: 'th' }, m.thumbnail_url ? E('img', { src: m.thumbnail_url, alt: m.name }) : E('span', { className: 'hint', text: 'Tanpa thumbnail' })),
       E('div', { className: 'body' },
         E('b', { text: m.name }), E('small', { text: `${m.slug} · ${m.neck || '—'} · ${m.panels.length} panel` }),
-        E('div', { className: 'row' }, name, size),
+        E('div', { className: 'mrow' }, name, size),
         E('div', { className: 'acts' },
           m.is_default ? E('span', { className: 'pill-s pro', text: 'DEFAULT' }) : E('button', { className: 'btn sm', text: 'Jadikan default', on: { click: async () => { await sb.from('garment_models').update({ is_default: false }).neq('id', m.id); await sb.from('garment_models').update({ is_default: true }).eq('id', m.id); toast('Model default diganti'); go('models'); } } }),
           E('button', { className: 'btn sm', text: m.active ? 'Sembunyikan' : 'Tampilkan', on: { click: async () => { await sb.from('garment_models').update({ active: !m.active }).eq('id', m.id); go('models'); } } }),
           E('button', { className: 'btn sm', text: 'Simpan', on: { click: async () => { const { error } = await sb.from('garment_models').update({ name: name.value.trim() || m.name, size_label: size.value.trim() || 'M' }).eq('id', m.id); toast(error ? 'Gagal: ' + error.message : 'Tersimpan'); } } }),
-          m.is_default ? null : confirmBtn('Hapus', async () => {
+          confirmBtn('Hapus', async () => {
+            if (m.is_default && (data || []).length < 2) { toast('Model terakhir tidak bisa dihapus. Import model lain dulu.'); return; }
             if (m.glb_url.includes('/storage/v1/object/public/models/')) await sb.storage.from('models').remove([m.glb_url.split('/models/').pop(), `${m.slug}.png`]);
-            await sb.from('garment_models').delete().eq('id', m.id); toast('Model dihapus'); go('models');
+            const { error: de } = await sb.from('garment_models').delete().eq('id', m.id);
+            if (de) { toast('Gagal menghapus: ' + de.message); return; }
+            if (m.is_default) { const nx = (data || []).find(x => x.id !== m.id && x.active) || (data || []).find(x => x.id !== m.id); if (nx) await sb.from('garment_models').update({ is_default: true }).eq('id', nx.id); }
+            toast('Model dihapus'); go('models');
           })))));
   });
 }
@@ -247,18 +251,26 @@ async function importModel() {
       const dxf = panelsFromDXF(await dxfI.files[0].text());
       if (!dxf.length) throw new Error('Tidak ada garis potong (polyline tertutup) di DXF.');
       panels = matchPanels(dxf, info);
-      const bad = panels.filter(p => p.err > 20);
-      status.textContent = `${g.meshes.length} mesh · ${dxf.length} panel · ${g.tris.toLocaleString('id-ID')} segitiga · atlas ${g.uv.Wmm.toFixed(0)} × ${g.uv.Hmm.toFixed(0)} mm`;
+      panels.forEach(p => { p.use = p.err <= 20; });
+      const skipped = panels.filter(p => !p.use);
+      const meshInfoTxt = `${g.meshes.length} mesh kain${g.trims.length ? ` + ${g.trims.length} trim` : ''} · ${dxf.length} panel DXF · ${g.tris.toLocaleString('id-ID')} segitiga · atlas ${g.uv.Wmm.toFixed(0)} × ${g.uv.Hmm.toFixed(0)} mm`;
+      const note = E('p', { className: 'hint' });
+      const refresh = () => {
+        const used = panels.filter(p => p.use), hasF = used.some(p => p.role === 'front'), hasB = used.some(p => p.role === 'back');
+        note.textContent = (skipped.length ? `${skipped.length} panel DXF dilewati karena tidak punya mesh berUV pola di GLB (biasanya rib/trim/topstitch yang UV-nya 0..1). Itu normal, trim tetap tampil polos. ` : '') + (!hasF ? 'Tandai minimal satu panel sebagai Depan. ' : '') + (!hasB ? 'Belum ada panel Belakang (boleh, tapi teks belakang tidak tersedia). ' : '');
+        save.disabled = !used.length || !hasF;
+      };
+      status.textContent = meshInfoTxt;
       if (g.uv.Wmm < 50) status.textContent += ' · UV terlihat 0..1, bukan mm: ekspor ulang dari CLO3D dengan opsi Unified/Pattern UV.';
       panels.forEach(p => {
         const role = E('select', { className: 'in' }, ['front', 'back', 'sleeve', 'rib', 'other'].map(r => E('option', { value: r, text: { front: 'Depan', back: 'Belakang', sleeve: 'Lengan', rib: 'Rib / trim', other: 'Lainnya' }[r], selected: p.role === r })));
         const lab = E('input', { className: 'in', value: p.label });
-        role.onchange = () => p.role = role.value; lab.oninput = () => p.label = lab.value;
-        plist.append(E('div', { className: 'prow' }, lab, role, E('small', { className: 'hint', text: `${((p.bb.maxX - p.bb.minX) / 10).toFixed(1)}×${((p.bb.maxY - p.bb.minY) / 10).toFixed(1)} cm` }),
-          E('span', { className: p.err <= 20 ? 'ok-dot' : 'bad-dot', title: p.err <= 20 ? 'Cocok dengan mesh' : 'Tidak cocok dengan UV mesh mana pun' })));
+        const use = E('input', { type: 'checkbox', checked: p.use, disabled: p.err > 20, title: p.err > 20 ? 'Tidak ada mesh kain dengan UV pola yang cocok: dilewati' : 'Pakai panel ini' });
+        role.onchange = () => { p.role = role.value; refresh(); }; lab.oninput = () => p.label = lab.value; use.onchange = () => { p.use = use.checked; refresh(); };
+        plist.append(E('div', { className: 'prow' + (p.use ? '' : ' skip') }, use, lab, role, E('small', { className: 'hint', text: `${((p.bb.maxX - p.bb.minX) / 10).toFixed(1)}×${((p.bb.maxY - p.bb.minY) / 10).toFixed(1)} cm` }),
+          E('span', { className: p.use ? 'ok-dot' : 'bad-dot', title: p.use ? 'Cocok dengan mesh' : 'Dilewati: tidak ada mesh UV pola' })));
       });
-      if (bad.length) status.textContent += ` · ${bad.length} panel tidak cocok dengan UV, periksa ekspor.`;
-      save.disabled = !!bad.length || !panels.some(p => p.role === 'front');
+      plist.append(note); refresh();
     } catch (e) { status.textContent = 'Gagal menganalisis: ' + (e.message || e); }
   }
   glbI.onchange = analyze; dxfI.onchange = analyze;
@@ -280,7 +292,7 @@ async function importModel() {
         if (!t.error) thumbnail_url = sb.storage.from('models').getPublicUrl(`${slug}.png`).data.publicUrl + '?t=' + Date.now();
       } catch (e) { console.warn(e); }
       const row = { name: nameI.value.trim(), slug, neck: neckI.value.trim() || null, size_label: sizeI.value.trim() || 'M', glb_url, thumbnail_url,
-        panels: panels.map(p => ({ id: p.id, label: p.label, role: p.role, pts: p.pts })), meta: { source: 'CLO3D', uv_units: 'mm', imported_by: me.user.email } };
+        panels: panels.filter(p => p.use).map(p => ({ id: p.id, label: p.label, role: p.role, pts: p.pts })), meta: { source: 'CLO3D', uv_units: 'mm', imported_by: me.user.email } };
       const { error } = await sb.from('garment_models').upsert(row, { onConflict: 'slug' });
       if (error) throw error;
       toast('Model tersimpan dan langsung tersedia di Studio'); m.close(); go('models');
