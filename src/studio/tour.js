@@ -8,7 +8,7 @@ export const STUDIO_TOUR = [
   ['tab-elements', 'Teks, logo, sponsor', 'Tambah nama, nomor, logo tim, dan sponsor. Upload PNG transparan untuk hasil terbaik.'],
   ['tab-vector', 'Export SVG', 'Ubah pattern yang sedang kamu buat jadi vektor SVG berwarna datar, siap dibuka di Illustrator, CorelDraw, atau Inkscape. Pratinjau gratis, unduh khusus Pro.'],
   ['pane2d', 'Pola jahit 2D', 'Ini panel pola jahit asli dari file DXF. Seret teks atau logo untuk memindahkan, tarik kotak kecil di sudutnya untuk mengubah ukuran. Scroll atau pinch untuk zoom.'],
-  ['pane3d', 'Pratinjau 3D', 'Semua perubahan langsung tampil di model 3D. Seret untuk memutar, scroll untuk zoom, atau pilih sudut kamera.'],
+  ['pane3d', 'Pratinjau 3D', 'Semua perubahan langsung tampil di model 3D. Seret untuk memutar, scroll untuk zoom, atau pilih sudut kamera. Aktifkan Geser (atau klik kanan) untuk menggeser model.'],
   ['layout', 'Mode tampilan', 'Pilih Split, Pola, 3D, atau Pattern. Di HP, pakai satu tampilan saja agar lebih ringan.'],
   ['tab-view', 'Latar dan kain', 'Ganti latar studio, polos, atau transparan, dan atur tekstur rajutan kain.'],
   ['export', 'Export', 'Unduh pattern, pola jahit skala 1:1 (SVG/PNG), atau snapshot 3D. Pola jahit dan resolusi tinggi khusus member Pro.'],

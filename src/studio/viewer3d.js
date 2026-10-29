@@ -89,10 +89,14 @@ export class Viewer3D {
       this.distGoal = Math.min(this.maxDist, Math.max(this.minDist, this.distGoal * k));
     }, { passive: false });
     this.controls = new OrbitControls(this.camera, canvas);
-    this.controls.enableDamping = true; this.controls.dampingFactor = .08; this.controls.enablePan = false;
+    this.controls.enableDamping = true; this.controls.dampingFactor = .08;
+    // pan aktif: klik kanan / seret dua jari / mode Geser (setGrab). Pivot kamera = controls.target,
+    // jadi this.target dibuat satu objek dengannya supaya hasil geser tidak ditimpa loop zoom.
+    this.controls.enablePan = true; this.controls.screenSpacePanning = true;
+    this.target = this.controls.target; this.home = new THREE.Vector3(); this.tgtGoal = null;
     this.controls.autoRotate = autoRotate; this.controls.autoRotateSpeed = 2;
     this.controls.enabled = interactive;
-    this.controls.addEventListener('start', () => { this.camGoal = null; this.onUserMove && this.onUserMove(); });
+    this.controls.addEventListener('start', () => { this.camGoal = null; this.tgtGoal = null; this.onUserMove && this.onUserMove(); });
     this.controls.addEventListener('change', () => { if (!this._zooming) this.distGoal = this.camera.position.distanceTo(this.target); });
     this.minDist = .5; this.maxDist = 4;
     this.normTex = makeKnitNormal();
@@ -118,7 +122,7 @@ export class Viewer3D {
     for (const m of g.meshes) m.material = this.matOut;
     for (const m of g.trims) m.material = this.matTrim;
     this.root = g.scene; this.scene.add(g.scene);
-    const box = new THREE.Box3().setFromObject(g.scene); box.getCenter(this.target);
+    const box = new THREE.Box3().setFromObject(g.scene); box.getCenter(this.target); this.home.copy(this.target);
     const hgt = box.max.y - box.min.y, wid = box.max.x - box.min.x;
     this.shadow.scale.set(wid * 1.6, wid * .9, 1); this.shadow.position.set(this.target.x, box.min.y - .04, this.target.z);
     this.dist = this.distGoal = hgt / 2 / Math.tan(THREE.MathUtils.degToRad(16)) * 1.45;
@@ -168,9 +172,18 @@ export class Viewer3D {
 
   setShadow(on) { this.shadow.visible = on; }
 
+  /** Mode Geser: seret kiri menggeser model (bukan memutar). Shift/Ctrl + seret tetap memutar. */
+  setGrab(on) {
+    this.controls.mouseButtons.LEFT = on ? THREE.MOUSE.PAN : THREE.MOUSE.ROTATE;
+    this.controls.touches.ONE = on ? THREE.TOUCH.PAN : THREE.TOUCH.ROTATE;
+    this.canvas.classList.toggle('grab', !!on);
+  }
+
   setView(name, instant) {
     const dirs = { front: [0, .08, 1], back: [0, .08, -1], side: [1, .08, .12], three: [.75, .15, .8] };
-    const d = new THREE.Vector3(...(dirs[name] || dirs.front)).normalize().multiplyScalar(this.distGoal).add(this.target);
+    // pilih sudut kamera = kembali ke tengah model (geseran dibatalkan)
+    if (instant) { this.target.copy(this.home); this.tgtGoal = null; } else this.tgtGoal = this.home.clone();
+    const d = new THREE.Vector3(...(dirs[name] || dirs.front)).normalize().multiplyScalar(this.distGoal).add(this.home);
     if (instant) { this.camera.position.copy(d); this.controls.update(); this.camGoal = null; } else this.camGoal = d;
   }
 
@@ -182,6 +195,11 @@ export class Viewer3D {
   _loop() {
     requestAnimationFrame(this._loop);
     if (document.hidden || this.paused) return;
+    if (this.tgtGoal) { // kembali ke tengah model dengan halus; kamera ikut bergeser agar offset tetap
+      const dl = this.tgtGoal.clone().sub(this.target);
+      if (dl.length() < 1e-3) { this.target.copy(this.tgtGoal); this.camera.position.add(dl); this.tgtGoal = null; }
+      else { dl.multiplyScalar(.14); this.target.add(dl); this.camera.position.add(dl); }
+    }
     const off = this.camera.position.clone().sub(this.target);
     if (this.camGoal) {
       const goal = this.camGoal.clone().sub(this.target);
@@ -193,6 +211,9 @@ export class Viewer3D {
     if (Math.abs(L - this.distGoal) > 1e-4) { this._zooming = true; off.setLength(L + (this.distGoal - L) * .16); }
     this.camera.position.copy(this.target).add(off);
     this.controls.update(); this._zooming = false;
+    // batasi geseran supaya model tidak hilang dari layar
+    const pan = this.target.clone().sub(this.home), lim = this.dist * .9;
+    if (pan.length() > lim) { pan.setLength(lim); const fix = this.home.clone().add(pan).sub(this.target); this.target.add(fix); this.camera.position.add(fix); }
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -202,7 +223,7 @@ export class Viewer3D {
    */
   async snapshot({ width = 1600, height = 1600, bg = { mode: 'studio' }, views = null } = {}) {
     const r = this.renderer, oldSize = r.getSize(new THREE.Vector2()), oldPR = r.getPixelRatio();
-    const keepPos = this.camera.position.clone(), keepAuto = this.controls.autoRotate;
+    const keepPos = this.camera.position.clone(), keepTgt = this.target.clone(), keepAuto = this.controls.autoRotate;
     this.controls.autoRotate = false;
     const list = views && views.length ? views : [null];
     const out = document.createElement('canvas'); out.width = width * list.length; out.height = height;
@@ -216,7 +237,7 @@ export class Viewer3D {
       ctx.drawImage(r.domElement, i * width, 0, width, height);
     }
     r.setPixelRatio(oldPR); r.setSize(oldSize.x, oldSize.y, false); this.resize();
-    this.camera.position.copy(keepPos); this.controls.update(); this.controls.autoRotate = keepAuto;
+    this.target.copy(keepTgt); this.camera.position.copy(keepPos); this.controls.update(); this.controls.autoRotate = keepAuto;
     return out;
   }
 }

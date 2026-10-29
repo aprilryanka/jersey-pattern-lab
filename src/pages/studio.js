@@ -174,19 +174,23 @@ $$('.tabs [data-tab]').forEach(b => b.onclick = () => setTab(b.dataset.tab));
 function setLayout(name) {
   layout = name;
   $('#main').dataset.layout = name;
-  $$('[data-layout]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.layout === name)));
+  $$('button[data-layout]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.layout === name)));
   viewer.paused = !show3D(); editor.hidden = !show2D();
   needLayers = true; patDirty = true;
   try { localStorage.setItem('jpl_layout', name); } catch (e) { }
   requestAnimationFrame(() => { if (show2D()) { editor.resize(); editor.fit(true); } if (show3D()) viewer.resize(); });
 }
-$$('[data-layout]').forEach(b => b.onclick = () => setLayout(b.dataset.layout));
+// Hanya tombol: <main id="main"> juga punya atribut data-layout, jadi selector tanpa "button"
+// memasang onclick di seluruh area studio dan setiap klik/seret memanggil fit() (zoom & geser pola ter-reset).
+$$('button[data-layout]').forEach(b => b.onclick = () => setLayout(b.dataset.layout));
 { // HP: default satu tampilan (Pola 2D) agar ringan; pilihan terakhir diingat
   let saved = null; try { saved = localStorage.getItem('jpl_layout'); } catch (e) { }
   setLayout(['split', '2d', '3d', 'pattern'].includes(saved) ? saved : PHONE ? '2d' : 'split');
 }
 $$('[data-unit]').forEach(b => b.onclick = () => { units = b.dataset.unit; $$('[data-unit]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); editor.invalidate(); });
 $$('[data-cam]').forEach(b => b.onclick = () => { viewer.setView(b.dataset.cam); $$('[data-cam]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); });
+// Grab: seret kiri = geser model (bukan putar). Klik kanan / seret dua jari juga menggeser.
+$('#grab').onclick = e => { const on = e.currentTarget.getAttribute('aria-pressed') !== 'true'; e.currentTarget.setAttribute('aria-pressed', String(on)); viewer.setGrab(on); };
 $('#spin').onclick = e => { viewer.controls.autoRotate = !viewer.controls.autoRotate; e.currentTarget.setAttribute('aria-pressed', String(viewer.controls.autoRotate)); };
 $('#modelSel').onchange = e => useModel(models[+e.target.value]);
 
@@ -194,12 +198,7 @@ $('#modelSel').onchange = e => useModel(models[+e.target.value]);
 function setMode(mode) {
   $$('[data-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
   $('#basicPanel').hidden = mode !== 'basic'; $('#advPanel').hidden = mode !== 'advanced';
-  if (mode === 'advanced') {
-    ensureAdv();
-    const ok = pro || !!import.meta.env.VITE_PREVIEW;
-    $('#advLock').hidden = ok; $('#advHost').classList.toggle('locked', !ok);
-    if (!ok) { toast('Mode Advanced khusus member Pro'); return; }
-  }
+  if (mode === 'advanced') ensureAdv(); // Advanced gratis untuk semua; hanya fitur upload gambar yang khusus Pro
   S.mode = mode; $('#repWrap').hidden = mode !== 'advanced';
   invalidateBase();
 }
@@ -208,6 +207,7 @@ let hiT = 0;
 function ensureAdv() {
   if (adv) return adv;
   adv = initAdvanced($('#advHost'), {
+    canUpload: () => pro, onLocked: () => uploadUpsell(),
     onChange: () => {
       if (S.mode !== 'advanced') return;
       invalidateBase();
@@ -308,7 +308,11 @@ function buildPanelFills() {
     const more = E('div', { className: 'pf-more' });
     const rebuild = () => { more.replaceChildren(...fillMore(p, S.panelFill[p.id] || f, commit, rebuild)); };
     const commit = () => { S.panelFill[p.id] = S.panelFill[p.id] || f; invalidateBase(); };
-    const sel = E('select', { 'aria-label': 'Isi ' + p.label, on: { change: e => { S.panelFill[p.id] = newFill(e.target.value, p, S.panelFill[p.id] || f); invalidateBase(); rebuild(); } } }, FILL_MODES.map(([id, nm]) => E('option', { value: id, text: nm, selected: f.mode === id })));
+    const sel = E('select', { 'aria-label': 'Isi ' + p.label, on: { change: e => {
+      // "Upload gambar" tetap tampil untuk akun gratis, tapi saat dipilih diarahkan ke upgrade Pro
+      if (e.target.value === 'image' && !pro) { e.target.value = (S.panelFill[p.id] || f).mode; uploadUpsell(); return; }
+      S.panelFill[p.id] = newFill(e.target.value, p, S.panelFill[p.id] || f); invalidateBase(); rebuild();
+    } } }, FILL_MODES.map(([id, nm]) => E('option', { value: id, text: id === 'image' && !pro ? nm + ' · Pro' : nm, selected: f.mode === id })));
     box.append(E('div', { className: 'pf', 'data-panel': p.id }, E('div', { className: 'pf-h' }, E('span', { text: p.label }), sel), more));
     rebuild();
   }
@@ -503,7 +507,7 @@ async function deserialize(pc = {}, es = {}) {
   const m = models.find(x => x.slug === es.model);
   if (m && m !== model) { $('#modelSel').value = models.indexOf(m); await useModel(m, true); }
   syncBasic(); syncEdit(); syncView(); buildPanelFills(); syncLayers();
-  setMode(pc.mode === 'advanced' && (pro || import.meta.env.VITE_PREVIEW) ? 'advanced' : 'basic');
+  setMode(pc.mode === 'advanced' ? 'advanced' : 'basic');
   invalidateBase();
 }
 function markDirty() { dirtySince = Date.now(); $('#saveState').textContent = projectId ? 'Ada perubahan' : 'Belum disimpan'; scheduleDraft(); }
@@ -583,6 +587,15 @@ function exportUpsell() {
       : E('div', { className: 'row' }, E('a', { className: 'btn primary', href: '/login?mode=signup&next=/billing', text: 'Daftar dan berlangganan' }), E('a', { className: 'btn', href: '/login?next=/studio', text: 'Sudah punya akun? Masuk' })),
     E('p', { className: 'hint', text: 'Desainmu tetap tersimpan di browser ini.' })));
 }
+/** Upsell untuk fitur upload gambar (isi panel per-panel dan foto di generator Advanced). */
+function uploadUpsell() {
+  scheduleDraft();
+  modal('Upload gambar khusus member Pro', E('div', { style: { display: 'grid', gap: '14px' } },
+    E('p', { style: { margin: 0 }, text: 'Pakai gambar sendiri sebagai isi panel atau sumber pattern hanya untuk member Pro. Generator pattern acak dan semua pilihan lain tetap gratis.' }),
+    me ? E('a', { className: 'btn primary lg', href: '/billing', text: 'Berlangganan Pro · Rp150.000/bulan' })
+      : E('div', { className: 'row' }, E('a', { className: 'btn primary', href: '/login?mode=signup&next=/billing', text: 'Daftar dan berlangganan' }), E('a', { className: 'btn', href: '/login?next=/studio', text: 'Sudah punya akun? Masuk' })),
+    E('p', { className: 'hint', text: 'Desainmu tetap tersimpan di browser ini.' })));
+}
 $('#btnExport').onclick = () => {
   if (!pro) { scheduleDraft(); exportUpsell(); return; }
   const pSize = E('select', { className: 'in' }, [1024, 2048, 3000].map(v => E('option', { value: v, text: v + ' px', selected: v === 3000 })));
@@ -653,6 +666,10 @@ initArc();
   me = await mountNav('studio', { tag: 'STUDIO' });
   pro = isPro(me) || (import.meta.env.DEV && location.search.includes('devpro'));
   protectImages();
+  if (!pro) { // banner upgrade untuk akun gratis / belum login
+    $('#upBannerLink').href = me ? '/billing' : '/login?mode=signup&next=/billing';
+    $('#upBanner').hidden = false; document.body.classList.add('has-banner');
+  }
   syncBasic(); syncEdit(); syncView();
   boot(.35, 'Memuat daftar model…');
   await loadModels();

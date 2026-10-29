@@ -66,8 +66,14 @@ function markup() {
  * Pasang generator Advanced ke container.
  * @returns API { pat, build, getState, setState, randomizeAll, thumbs }
  */
-export function initAdvanced(container, { onChange = () => { } } = {}) {
+export function initAdvanced(container, { onChange = () => { }, canUpload = () => true, onLocked = () => { } } = {}) {
   container.append(...markup());
+  // Upload gambar (foto sumber & ambil warna) khusus Pro: tetap tampil untuk semua, tapi akun gratis diarahkan ke upgrade
+  const gated = ['a_imf', 'a_rff'].map(id => document.getElementById(id));
+  for (const inp of gated) {
+    if (!canUpload()) { const b = document.createElement('span'); b.className = 'badge'; b.textContent = 'Pro'; inp.parentElement.append(b); }
+    inp.addEventListener('click', e => { if (!canUpload()) { e.preventDefault(); onLocked(); } });
+  }
   const $ = id => document.getElementById('a_' + id);
   let R = 560;
   const pat = document.createElement('canvas'), P = pat.getContext('2d', { willReadFrequently: true });

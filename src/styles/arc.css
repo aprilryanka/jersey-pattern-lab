@@ -46,6 +46,8 @@ body.studio .field .v { color: var(--foreground); font-family: var(--f-body); fo
 body.studio .save-state, body.studio .foot, body.studio .tour-count, body.studio .layers button small, body.studio .projgrid .pc small { font-family: var(--f-body); }
 
 /* permukaan */
+body.studio .up-banner { background: var(--accent-subtle); border-bottom: 1px solid var(--border); color: var(--foreground); }
+body.studio .up-banner a { color: var(--accent); }
 body.studio .studio-bar { background: var(--surface); border-bottom: 1px solid var(--border); }
 body.studio .pane { border-right-color: var(--border); }
 body.studio .phead { background: var(--surface); border-bottom-color: var(--border); }

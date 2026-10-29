@@ -13,6 +13,7 @@
 </head>
 <body class="studio">
 <div class="boot" id="boot" role="status" aria-live="polite"><div class="boot-in"><div class="boot-logo"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="var(--accent)"/><path d="M20 14l-10 7 5 9 5-3v23h24V27l5 3 5-9-10-7h-6a6 6 0 0 1-12 0z" fill="var(--accent-ink)"/><path d="M26 30l6 8 6-8" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round"/></svg></div><h2>Jersey Pattern Lab</h2><div class="boot-bar"><i id="bootBar"></i></div><div class="boot-stitch"></div><p id="bootMsg">Menyiapkan Studio…</p></div></div>
+<div class="up-banner" id="upBanner" role="status" hidden><span>Anda sedang menggunakan versi Gratis.</span> <a id="upBannerLink" href="/billing">Upgrade ke Pro →</a></div>
 <div class="studio-bar">
   <input id="projName" class="proj-name" value="Desain tanpa judul" aria-label="Nama project" maxlength="60">
   <span class="save-state" id="saveState"></span>
@@ -53,9 +54,10 @@
         <button type="button" data-cam="back" aria-pressed="false">Belakang</button>
         <button type="button" data-cam="side" aria-pressed="false">Samping</button>
       </div>
+      <button class="ibtn" type="button" id="grab" aria-pressed="false" title="Geser model: seret untuk menggeser, bukan memutar">Geser</button>
       <button class="ibtn" type="button" id="spin" aria-pressed="false">Putar</button>
     </div>
-    <div class="stage bg-studio" id="wrap3d"><canvas id="c3d" aria-label="Pratinjau 3D, seret untuk memutar"></canvas>
+    <div class="stage bg-studio" id="wrap3d"><canvas id="c3d" aria-label="Pratinjau 3D. Seret untuk memutar, aktifkan Geser atau klik kanan untuk menggeser, scroll untuk zoom."></canvas>
       <div class="overlay" id="ov3d">Memuat model 3D…</div>
       <span class="live">Live preview</span>
     </div>
@@ -84,7 +86,7 @@
       <section>
         <div class="seg wide" role="group" aria-label="Mode generator" data-tour="mode">
           <button type="button" data-mode="basic" aria-pressed="true">Basic</button>
-          <button type="button" data-mode="advanced" aria-pressed="false">Advanced <span class="pro">Pro</span></button>
+          <button type="button" data-mode="advanced" aria-pressed="false">Advanced</button>
         </div>
       </section>
       <div id="basicPanel">
@@ -106,11 +108,6 @@
         </section>
       </div>
       <div id="advPanel" hidden>
-        <div class="lock" id="advLock" hidden>
-          <b>Mode Advanced khusus member Pro</b>
-          <p>Generator lengkap Jersey Pattern Lab: 9 gaya noise, 12 palet, finishing, efek glass dan brush, foto sebagai sumber pattern, plus 26 sample siap pakai.</p>
-          <a class="btn primary" href="/billing">Berlangganan Pro · Rp150.000/bulan</a>
-        </div>
         <div id="advHost" class="adv"></div>
       </div>
       <section class="vecbox" data-tour="tab-vector">
