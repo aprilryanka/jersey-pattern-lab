@@ -1,0 +1,25 @@
+name: fetch-models
+on:
+  push:
+    branches: [chore/fetch-models]
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download GLB models from Supabase storage
+        run: |
+          mkdir -p models
+          base="https://mwprkmudrelyxevdsncr.supabase.co/storage/v1/object/public/models"
+          for s in jersey-basic-v-neck-v2 jersey-basic-oneck-long; do
+            curl -sSL --fail -o "models/$s.glb" "$base/$s.glb"
+            echo "$s $(stat -c%s models/$s.glb) bytes"
+          done
+          ls -la models
+
+      - name: Upload as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: glb-models
+          path: models/
+          retention-days: 1
