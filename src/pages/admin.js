@@ -108,7 +108,7 @@ async function payments() {
       const note = E('input', { className: 'in', placeholder: 'Catatan (opsional)', maxLength: 140, style: { minWidth: '140px' } });
       const u = users[r.user_id];
       const act = r.status === 'pending' ? E('div', { className: 'acts' }, note,
-        E('button', { className: 'btn sm primary', text: 'Setujui', on: { click: e => review(r.id, true, note.value, e.target) } }),
+        E('button', { className: 'btn sm primary', text: 'Setujui', on: { click: e => review(r.id, true, note.value, e.target, r.amount) } }),
         E('button', { className: 'btn sm danger', text: 'Tolak', on: { click: e => review(r.id, false, note.value || 'Bukti tidak valid', e.target) } }))
         : E('span', { className: 'hint', text: (r.note || '') + (r.verified_at ? ' · ' + fmtDate(r.verified_at) : '') });
       return E('tr', {}, E('td', {}, img), E('td', {}, E('b', { text: u?.email || r.user_id.slice(0, 8) }), E('br'), E('small', { className: 'hint', text: fmtDate(r.created_at) })),
@@ -117,10 +117,21 @@ async function payments() {
     }));
     box.replaceChildren(tbl(['Bukti', 'Pengguna', 'Paket', 'Jumlah', 'Status', 'Aksi'], rows));
   }
-  async function review(id, ok, note, btn) {
+  async function review(id, ok, note, btn, amount = 150000) {
     btn.disabled = true;
     const { error } = await sb.rpc('review_payment', { p_id: id, p_approve: ok, p_note: note || null });
     if (error) { toast('Gagal: ' + error.message); btn.disabled = false; return; }
+    // Meta Pixel: admin approve = langganan Pro terkonfirmasi → Purchase
+    if (ok) {
+      try {
+        if (!window.fbq) {
+          // Lazy-load pixel hanya untuk Purchase, tanpa track PageView admin
+          (function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)})(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+          fbq('init','1748085718928733');
+        }
+        fbq('track','Purchase',{value:amount,currency:'IDR',num_items:1});
+      } catch {}
+    }
     toast(ok ? 'Disetujui. Pro aktif 30 hari.' : 'Pembayaran ditolak.'); load();
   }
   filter.onchange = load; load();

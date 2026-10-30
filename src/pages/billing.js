@@ -68,6 +68,8 @@ const STATUS = { pending: 'Menunggu verifikasi', approved: 'Disetujui', rejected
       if (up.error) throw up.error;
       const ins = await sb.from('payments').insert({ user_id: me.user.id, subscription_plan: 'pro', amount: price, proof_url: path, note: $('#note').value.trim() || null });
       if (ins.error) throw ins.error;
+      // Meta Pixel: calon member kirim bukti bayar = InitiateCheckout
+      try { if (typeof fbq !== 'undefined') fbq('track', 'InitiateCheckout', { value: price, currency: 'IDR', num_items: 1 }); } catch {}
       $('#ok').textContent = 'Bukti transfer terkirim. Admin akan memverifikasi, dan status Pro aktif setelah disetujui.';
       $('#payForm').reset(); $('#proofPrev').hidden = true;
       hist = await loadHist();

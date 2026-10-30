@@ -1,14 +1,14 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'node:path';
 
-// Meta Pixel hanya dipasang di landing dan studio (bukan login, admin, billing, akun).
+// Meta Pixel dipasang di landing, studio, dan billing (bukan login, admin, akun).
 const metaPixel = () => ({
   name: 'meta-pixel',
   transformIndexHtml: {
     order: 'post',
     handler(html, ctx) {
       const p = (ctx && (ctx.path || ctx.filename)) || '';
-      if (!/(^|[\\/])(index|studio)\.html$/.test(p)) return html;
+      if (!/(^|[\\/])(index|studio|billing)\.html$/.test(p)) return html;
       return html.replace('</head>', '<script src="/px.js" defer></script>\n</head>');
     },
   },
