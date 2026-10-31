@@ -3,6 +3,7 @@ import '../styles/auth.css';
 import { sb } from '../lib/supabase.js';
 import { mountNav } from '../lib/nav.js';
 import { $, eyeToggle } from '../lib/ui.js';
+import { signupAttribution } from '../lib/track.js';
 
 eyeToggle($('#pw')); eyeToggle($('#pw2'));
 const needsConfirm = () => mode === 'signup' || mode === 'reset';
@@ -68,7 +69,7 @@ $('#form').onsubmit = async e => {
       if (error) throw error;
       location.href = next;
     } else if (mode === 'signup') {
-      const { data, error } = await sb.auth.signUp({ email, password: pw, options: { data: { name: $('#name').value.trim() }, emailRedirectTo: location.origin + next } });
+      const { data, error } = await sb.auth.signUp({ email, password: pw, options: { data: { name: $('#name').value.trim(), ...signupAttribution() }, emailRedirectTo: location.origin + next } });
       if (error) throw error;
       if (data.session) location.href = next;
       else $('#ok').textContent = 'Akun dibuat. Cek email kamu dan klik link konfirmasi, lalu masuk.';
