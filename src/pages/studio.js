@@ -4,7 +4,8 @@ import '../styles/arc.css';
 import { initArc } from '../studio/arc-ui.js';
 import { sb, isPro } from '../lib/supabase.js';
 import { mountNav } from '../lib/nav.js';
-import { $, $$, E, toast, modal, download, withProgress, shrinkImage } from '../lib/ui.js';
+import { t, panelLabel, locale } from '../lib/i18n.js';
+import { $, $$, E, toast, modal, download, withProgress, shrinkImage, waLink } from '../lib/ui.js';
 import { BASIC_STYLES, BASIC_PALETTES, drawBasicThumb, drawBasic } from '../studio/basic.js';
 import { initAdvanced } from '../studio/advanced.js';
 import { layoutModel, renderAtlas, renderLayers, FONTS, setImageReadyHandler } from '../studio/atlas.js';
@@ -117,7 +118,7 @@ async function useModel(m, keepLayers = true) {
   try {
     const g = await viewer.setModel(m.glb_url);
     const lay = layoutModel(m.panels, g.uv);
-    model = m; L = lay;
+    lay.panels.forEach(p => { p.label = panelLabel(p.label); }); model = m; L = lay;
     // jaga tinggi atlas di bawah batas tekstur GPU (kalau lewat, model 3D tampil putih)
     sc = Math.min(TEX_PX / L.Wmm, Math.min(viewer.maxTex, 8192) / L.Hmm);
     if (!base) { base = E('canvas'); atlas = E('canvas'); bctx = base.getContext('2d'); actx = atlas.getContext('2d'); }
@@ -150,7 +151,7 @@ async function useModel(m, keepLayers = true) {
 const panelByRole = r => L.panels.find(p => p.role === r) || L.panels.find(p => !p.rib);
 function newText(role, o) {
   const p = panelByRole(role);
-  const Ly = { id: 'l' + (layerSeq++), type: 'text', panel: p.id, _role: role, text: 'TEKS', font: 0, size: 70, color: '#ffffff', stroke: '#0b1d3a', strokeW: 0, rot: 0, opacity: 1, italic: false, lx: p.w / 2, ly: p.h * .5, ...o };
+  const Ly = { id: 'l' + (layerSeq++), type: 'text', panel: p.id, _role: role, text: t('TEKS'), font: 0, size: 70, color: '#ffffff', stroke: '#0b1d3a', strokeW: 0, rot: 0, opacity: 1, italic: false, lx: p.w / 2, ly: p.h * .5, ...o };
   if (typeof Ly.lx === 'function') Ly.lx = Ly.lx(p); if (typeof Ly.ly === 'function') Ly.ly = Ly.ly(p);
   S.layers.push(Ly); return Ly;
 }
@@ -374,9 +375,9 @@ $('#lDel').onclick = () => { const i = S.layers.findIndex(l => l.id === selId); 
 const move = d => { const i = S.layers.findIndex(l => l.id === selId), j = i + d; if (i < 0 || j < 0 || j >= S.layers.length) return; [S.layers[i], S.layers[j]] = [S.layers[j], S.layers[i]]; syncLayers(); invalidateLayers(); };
 $('#lUp').onclick = () => move(1); $('#lDown').onclick = () => move(-1);
 const addT = (role, o) => { const Ly = newText(role, o); if (S.mode === 'basic') { const c = lum(S.basic.colors[0]) > .55 ? '#111111' : '#ffffff'; Ly.color = c; } selId = Ly.id; syncLayers(); invalidateLayers(); setTab('elements'); };
-$('#addName').onclick = () => addT('back', { text: 'NAMA', size: 58, ly: p => p.h * .2 });
+$('#addName').onclick = () => addT('back', { text: t('NAMA'), size: 58, ly: p => p.h * .2 });
 $('#addNumber').onclick = () => addT('back', { text: '10', size: 250, ly: p => p.h * .46 });
-$('#addText').onclick = () => addT('front', { text: 'TEKS', size: 60, ly: p => p.h * .6 });
+$('#addText').onclick = () => addT('front', { text: t('TEKS'), size: 60, ly: p => p.h * .6 });
 function addImage(file, role, o) {
   if (!file) return;
   if (file.size > 8e6) { toast('Gambar terlalu besar, maksimal 8 MB'); return; }
@@ -462,7 +463,7 @@ function openVector() {
         if (S.mode === 'advanced') invalidateBase();
         if (!result) { stat.textContent = 'Tidak ada bentuk yang bisa diproses.'; return; }
         out.hidden = false;
-        stat.textContent = `${result.colors} warna · ${result.paths} lapis · ${result.kb.toLocaleString('id-ID')} KB · ${result.w} × ${result.h}`;
+        stat.textContent = `${result.colors} warna · ${result.paths} lapis · ${result.kb.toLocaleString(locale)} KB · ${result.w} × ${result.h}`;
         url && URL.revokeObjectURL(url);
         url = URL.createObjectURL(new Blob([result.svg], { type: 'image/svg+xml' }));
         if (pro) img.src = url;
@@ -523,7 +524,7 @@ async function save() {
   if (!me) { scheduleDraft(); location.href = '/login?next=' + encodeURIComponent('/studio'); return; }
   const btn = $('#btnSave'); btn.disabled = true; btn.textContent = 'Menyimpan…';
   try {
-    const row = { name: $('#projName').value.trim() || 'Desain tanpa judul', ...serialize() };
+    const row = { name: $('#projName').value.trim() || t('Desain tanpa judul'), ...serialize() };
     let res;
     if (projectId) res = await sb.from('projects').update(row).eq('id', projectId).select('id').single();
     else res = await sb.from('projects').insert({ ...row, user_id: me.user.id }).select('id').single();
@@ -537,7 +538,7 @@ async function save() {
       const up = await sb.storage.from('thumbnails').upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
       if (!up.error) { const { data } = sb.storage.from('thumbnails').getPublicUrl(path); await sb.from('projects').update({ thumbnail_url: data.publicUrl + '?t=' + Date.now() }).eq('id', projectId); }
     } catch (e) { console.warn(e); }
-    $('#saveState').textContent = 'Tersimpan ' + new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    $('#saveState').textContent = 'Tersimpan ' + new Date().toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
     toast('Project tersimpan');
   } catch (e) {
     if (String(e.message || '').includes('project_limit_reached')) {
@@ -550,6 +551,8 @@ async function save() {
 $('#btnSave').onclick = save;
 addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); save(); } });
 $('#projName').oninput = markDirty;
+if ($('#projName').value === 'Desain tanpa judul') $('#projName').value = t('Desain tanpa judul');
+{ const cta = document.querySelector('.studio-cta-btn'); if (cta) cta.href = waLink('Halo, saya mau cetak jersey fisik dari Jersey Pattern Lab'); }
 
 async function openProject(id) {
   const { data, error } = await sb.from('projects').select('*').eq('id', id).maybeSingle();
@@ -570,12 +573,12 @@ $('#btnProjects').onclick = async () => {
   if (!data || !data.length) grid.append(E('p', { className: 'hint', text: 'Belum ada project tersimpan.' }));
   (data || []).forEach(p => grid.append(E('div', { className: 'pc' },
     p.thumbnail_url ? E('img', { src: p.thumbnail_url, alt: '', loading: 'lazy' }) : E('div', { className: 'ph' }),
-    E('div', { className: 'meta' }, E('b', { text: p.name }), E('small', { text: new Date(p.updated_at).toLocaleString('id-ID') }),
+    E('div', { className: 'meta' }, E('b', { text: p.name }), E('small', { text: new Date(p.updated_at).toLocaleString(locale) }),
       E('div', { className: 'row' },
         E('button', { className: 'btn sm primary', text: 'Buka', on: { click: async () => { m.close(); await openProject(p.id); } } }),
         E('button', { className: 'btn sm danger', text: 'Hapus', on: { click: async e => { if (e.target.dataset.c !== '1') { e.target.dataset.c = '1'; e.target.textContent = 'Yakin?'; return; } await sb.from('projects').delete().eq('id', p.id); if (projectId === p.id) projectId = null; e.target.closest('.pc').remove(); toast('Project dihapus'); } } }))))));
 };
-function newProject() { projectId = null; $('#projName').value = 'Desain tanpa judul'; history.replaceState(null, '', '/studio'); defaultLayers(); S.panelFill = {}; syncLayers(); buildPanelFills(); invalidateBase(); $('#saveState').textContent = 'Desain baru'; }
+function newProject() { projectId = null; $('#projName').value = t('Desain tanpa judul'); history.replaceState(null, '', '/studio'); defaultLayers(); S.panelFill = {}; syncLayers(); buildPanelFills(); invalidateBase(); $('#saveState').textContent = 'Desain baru'; }
 
 /* ---------------- Export (khusus Pro) ---------------- */
 function exportUpsell() {
@@ -683,7 +686,7 @@ initArc();
   else {
     try {
       const d = JSON.parse(localStorage.getItem('jpl_draft') || 'null');
-      if (d && d.editor_state) { $('#projName').value = d.name || 'Desain tanpa judul'; projectId = me ? d.id || null : null; await deserialize(d.pattern_config, d.editor_state); $('#saveState').textContent = 'Draft dipulihkan'; }
+      if (d && d.editor_state) { $('#projName').value = d.name || t('Desain tanpa judul'); projectId = me ? d.id || null : null; await deserialize(d.pattern_config, d.editor_state); $('#saveState').textContent = 'Draft dipulihkan'; }
     } catch (e) { }
   }
   await Promise.race([fontsReady, new Promise(r => setTimeout(r, 2500))]);

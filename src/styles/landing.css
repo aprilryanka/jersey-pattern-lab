@@ -174,3 +174,4 @@ html.rv [data-reveal].in { opacity: 1; transform: none; }
 .stage.static .stage-sticky { display: flex; flex-direction: column; }
 .stage.static .stage-poster { order: 2; position: relative; right: auto; top: auto; display: block; height: auto; width: min(320px, 70vw); margin: 24px auto 0; transform: none; opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .stage-hint i { animation: none; } }
+html[lang="en"] .plan.pro::after { content: "Most popular"; }

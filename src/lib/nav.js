@@ -1,3 +1,4 @@
+import { langButton } from './i18n.js';
 import { getMe, planOf, isAdmin, signOut } from './supabase.js';
 import { E } from './ui.js';
 import { themeButton } from './theme.js';
@@ -45,7 +46,7 @@ export async function mountNav(current, { tag } = {}) {
   const nav = E('nav', { 'aria-label': 'Navigasi utama' },
     links.map(([id, href, label]) => E('a', { href, text: label, 'aria-current': id === current ? 'page' : null })));
 
-  const act = E('div', { className: 'act' }, themeButton());
+  const act = E('div', { className: 'act' }, langButton(), themeButton());
   if (me) {
     act.append(
       E('span', { className: 'chip', text: plan === 'pro' ? (isAdmin(me) ? 'ADMIN' : 'PRO') : 'GRATIS' }),

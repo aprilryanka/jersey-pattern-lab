@@ -1,3 +1,5 @@
+import { t, locale } from './i18n.js';
+
 export const $ = (s, r = document) => r.querySelector(s);
 export const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
@@ -20,8 +22,8 @@ export function E(tag, attrs = {}, ...kids) {
 
 export const rp = n => 'Rp' + (Math.round(+n) || 0).toLocaleString('id-ID');
 export const WA_DEFAULT = '6289634547665';
-export const waLink = (text, num = WA_DEFAULT) => `https://wa.me/${num}?text=${encodeURIComponent(text)}`;
-export const fmtDate = d => d ? new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+export const waLink = (text, num = WA_DEFAULT) => `https://wa.me/${num}?text=${encodeURIComponent(t(text))}`;
+export const fmtDate = d => d ? new Date(d).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
 
 let tt = 0;
 export function toast(msg, ms = 2200) {

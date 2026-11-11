@@ -1,5 +1,6 @@
 // Export: pattern (tile), pola jahit skala 1:1 (SVG/PNG), dan snapshot 3D.
 import { drawBasic } from './basic.js';
+import { isEn, locale } from '../lib/i18n.js';
 import { renderAtlas, renderPanel, panelPath } from './atlas.js';
 
 const esc = s => String(s).replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
@@ -19,13 +20,16 @@ export async function exportPattern({ S, adv, size, jpg, texSize }) {
   return toBlob(c, jpg ? 'image/jpeg' : 'image/png', .93);
 }
 
+const W_ = isEn ? { size: 'size', title: '1:1 scale sewing pattern (mm)', scale: '1:1 scale (mm)', print: 'print at 100% without "fit to page"', check: '10 cm (scale check)' }
+  : { size: 'ukuran', title: 'pola jahit skala 1:1 (mm)', scale: 'skala 1:1 (mm)', print: 'cetak 100% tanpa "fit to page"', check: '10 cm (cek skala)' };
+
 /** Pola jahit SVG skala 1:1 (mm). Setiap panel = gambar desain + garis potong + label. */
 export async function exportSewingSVG({ L, S, adv, dpi = 100, modelName = 'Jersey', size = 'M', progress = () => { } }) {
   const sc = dpi / 25.4, m = 15;
   const minX = L.uMin - m, maxY = L.vTop + m, W = L.Wmm + m * 2, H = L.Hmm + m * 2 + 30;
   const parts = [];
   parts.push(`<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W.toFixed(2)}mm" height="${H.toFixed(2)}mm" viewBox="0 0 ${W.toFixed(2)} ${H.toFixed(2)}">`);
-  parts.push(`<title>${esc(modelName)} · ukuran ${esc(size)} · pola jahit skala 1:1 (mm)</title>`);
+  parts.push(`<title>${esc(modelName)} · ${W_.size} ${esc(size)} · ${W_.title}</title>`);
   const tx = x => (x - minX).toFixed(2), ty = y => (maxY - y).toFixed(2);
   let i = 0;
   for (const p of L.panels) {
@@ -44,8 +48,8 @@ export async function exportSewingSVG({ L, S, adv, dpi = 100, modelName = 'Jerse
     }
     parts.push('</g>');
   }
-  parts.push(`<text x="${m}" y="${(H - 8).toFixed(2)}" font-family="Arial, sans-serif" font-size="5" fill="#333">Jersey Pattern Lab · ${esc(modelName)} · ukuran ${esc(size)} · skala 1:1 (mm) · cetak 100% tanpa "fit to page" · ${new Date().toLocaleDateString('id-ID')}</text>`);
-  parts.push(`<g transform="translate(${m} ${(H - 22).toFixed(2)})"><rect width="100" height="4" fill="#000"/><text y="-2" font-family="Arial" font-size="4">10 cm (cek skala)</text></g>`);
+  parts.push(`<text x="${m}" y="${(H - 8).toFixed(2)}" font-family="Arial, sans-serif" font-size="5" fill="#333">Jersey Pattern Lab · ${esc(modelName)} · ${W_.size} ${esc(size)} · ${W_.scale} · ${W_.print} · ${new Date().toLocaleDateString(locale)}</text>`);
+  parts.push(`<g transform="translate(${m} ${(H - 22).toFixed(2)})"><rect width="100" height="4" fill="#000"/><text y="-2" font-family="Arial" font-size="4">${W_.check}</text></g>`);
   parts.push('</svg>');
   progress(.97, 'Menyusun file SVG…');
   return new Blob(parts, { type: 'image/svg+xml' });

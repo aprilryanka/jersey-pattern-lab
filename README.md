@@ -13,6 +13,18 @@ Stack: Vite (vanilla JS, multi-halaman) + Three.js + Supabase (auth, database, s
 | `/billing` | Langganan Pro Rp150.000/30 hari: transfer BCA + upload bukti |
 | `/admin` | Dashboard admin: ringkasan, verifikasi pembayaran, pengguna, model 3D (import GLB+DXF), pesanan, testimoni, FAQ, pengaturan |
 
+## Bahasa (ID / EN)
+
+Semua teks sumber ditulis dalam bahasa Indonesia. `src/lib/i18n.js` menerjemahkan halaman ke bahasa Inggris
+saat EN aktif, termasuk teks yang dibuat JS belakangan (lewat MutationObserver).
+
+- Pemilihan bahasa: `?lang=en` / `?lang=id` di URL → pilihan tersimpan (tombol ID/EN di navbar) →
+  otomatis: browser berbahasa Indonesia atau zona waktu WIB/WITA/WIT = ID, selain itu EN.
+- Menambah teks baru: tulis dalam bahasa Indonesia seperti biasa, lalu tambahkan pasangannya di objek `EN`
+  (teks persis) atau `RULES` (teks yang memuat angka/nama dinamis). Teks yang tidak ada di kamus tampil apa adanya.
+- Elemen `data-lang="en"` hanya tampil di EN (dan sebaliknya); `data-no-i18n` untuk teks yang tidak boleh diterjemahkan.
+- Halaman Admin belum diterjemahkan.
+
 ## Jalankan lokal
 
 ```bash

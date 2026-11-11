@@ -133,7 +133,7 @@ h1, h2, h3 { text-wrap: balance; }
   .pill .logo .tag, .pill .act .chip { display: none; }
   .pill .act .btn.primary { display: none; }
 }
-@media (max-width: 360px) { .pill .logo b { display: none; } }
+@media (max-width: 480px) { .pill .logo b { display: none; } }
 .preview-note { position: fixed; left: 50%; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 60; background: var(--ink); color: var(--bg); font: 500 12px/1.3 var(--f-mono); padding: 7px 14px; border-radius: 999px; max-width: calc(100vw - 24px); text-align: center; pointer-events: none; opacity: .92; }
 
 /* ---------- loading screen (beranda → studio) ---------- */
@@ -182,3 +182,19 @@ h1, h2, h3 { text-wrap: balance; }
 .pw-eye:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .pw-hint { font-size: 12px; color: var(--muted); margin: -6px 0 0; }
 .pw-hint.bad { color: var(--danger); } .pw-hint.good { color: var(--ok); }
+
+/* Pilihan bahasa ID / EN */
+.lang-switch { display: inline-flex; flex: none; height: 32px; padding: 2px; gap: 2px; border: 1px solid var(--line); border-radius: 999px; }
+.lang-switch button { min-width: 30px; padding: 0 8px; border: 0; border-radius: 999px; background: transparent; color: var(--muted); font: 600 11px/1 var(--f-mono); letter-spacing: .04em; cursor: pointer; transition: background .15s, color .15s; }
+.lang-switch button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+@media (hover: hover) and (pointer: fine) { .lang-switch button[aria-pressed="false"]:hover { color: var(--ink); } }
+.lang-switch button:focus { outline: none; }
+.lang-switch button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+@media (prefers-reduced-motion: reduce) { .lang-switch button { transition: none; } }
+.intl-note { margin: 10px 0 0; }
+/* Di layar sempit cukup tampilkan bahasa tujuan (satu tombol) agar navbar tidak meluber. */
+@media (max-width: 560px) {
+  .lang-switch { padding: 0; border: 0; }
+  .lang-switch button[aria-pressed="true"] { display: none; }
+  .lang-switch button { height: 32px; min-width: 32px; padding: 0; border: 1px solid var(--line); color: var(--ink); }
+}

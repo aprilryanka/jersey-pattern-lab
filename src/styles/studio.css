@@ -217,3 +217,4 @@ body.protect canvas, body.protect .styles, body.protect .adv { -webkit-touch-cal
 .layers button, .pf { transition: border-color .2s, background-color .2s; }
 .live::before { animation: live 1.8s ease-in-out infinite; }
 @keyframes live { 50% { opacity: .35; } }
+html[lang="en"] .layers:empty::before { content: "No layers yet. Add a name, number, logo or sponsor above."; }
