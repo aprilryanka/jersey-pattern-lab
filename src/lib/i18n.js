@@ -10,6 +10,10 @@ const KEY = 'jpl-lang';
 const ID_TZ = /^Asia\/(Jakarta|Pontianak|Makassar|Jayapura)$/;
 
 function detect() {
+  // Halaman yang isinya satu bahasa (mis. /license berbahasa Inggris) mengunci bahasanya lewat
+  // <meta name="jpl-lang" content="en">. Tidak disimpan, jadi tidak mengubah pilihan di halaman lain.
+  const forced = document.querySelector('meta[name="jpl-lang"]')?.content;
+  if (forced === 'en' || forced === 'id') return forced;
   try {
     const q = new URLSearchParams(location.search).get('lang');
     if (q === 'en' || q === 'id') { localStorage.setItem(KEY, q); return q; }
