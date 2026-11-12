@@ -34,5 +34,5 @@ export async function loadDesignFont(d) {
     fontsLink = Object.assign(document.createElement('link'), { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?' + DESIGNS.map(x => 'family=' + fam(FONTS[x.text.font])).join('&') + '&display=swap' });
     fontsLink.dataset.jplFonts = '1'; document.head.append(fontsLink);
   }
-  try { await Promise.race([document.fonts.load(`${d.text.italic ? 'italic ' : ''}${f[2]} 60px "${f[1]}"`, d.text.team), new Promise(r => setTimeout(r, 2000))]); } catch { /* font cadangan */ }
+  try { await Promise.race([Promise.all([document.fonts.load(`${d.text.italic ? 'italic ' : ''}${f[2]} 60px "${f[1]}"`, d.text.team), document.fonts.load('400 60px "Anton"', '0123456789')]), new Promise(r => setTimeout(r, 2000))]); } catch { /* font cadangan */ }
 }

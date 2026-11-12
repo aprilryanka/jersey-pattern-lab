@@ -256,7 +256,7 @@ export async function createStage(canvas, opts = {}) {
   const panelOf = role => L.panels.find(p => p.role === role);
   const layerDefs = {
     team: { role: 'front', ly: p => p.h * .31, size: 38 }, fnum: { role: 'front', ly: p => p.h * .5, size: 120 },
-    name: { role: 'back', ly: p => p.h * .26, size: 54 }, bnum: { role: 'back', ly: p => p.h * .52, size: 230 },
+    name: { role: 'back', ly: p => p.h * .2, size: 54 }, bnum: { role: 'back', ly: p => p.h * .46, size: 230 },
   };
   const layer = {};
   for (const [k, d] of Object.entries(layerDefs)) {
@@ -301,6 +301,8 @@ export async function createStage(canvas, opts = {}) {
     if (layer.team) layer.team.text = t.team; if (layer.fnum) layer.fnum.text = t.number; if (layer.name) layer.name.text = t.name; if (layer.bnum) layer.bnum.text = t.number;
     for (const k in layer) Object.assign(layer[k], { font: t.font, color: t.color, stroke: t.stroke || t.color, strokeW: t.stroke ? 2.5 : 0, italic: !!t.italic, _full: null });
     if (layer.team) { layer.team._home.size = t.size || 38; layer.team.size = layer.team._home.size; layer.team.lx = layer.team._home.lx; layer.team.ly = layer.team._home.ly; }
+    // nomor selalu memakai Anton (font default Studio), tegak; font desain hanya untuk nama tim dan nama pemain
+    for (const k of ['fnum', 'bnum']) if (layer[k]) Object.assign(layer[k], { font: 0, italic: false, _full: null });
     if (layer.fnum) layer.fnum.hidden = true;
   }
   function repaint(layersOnly) {
