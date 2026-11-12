@@ -11,9 +11,9 @@ import { layoutModel, renderAtlas, renderLayers, panelPath, FONTS } from '../stu
 import { BASIC_STYLES, BASIC_PALETTES } from '../studio/basic.js';
 import { initAdvanced } from '../studio/advanced.js';
 import { DESIGNS, loadDesignFont } from './designs.js';
-import DEFAULT_PANELS from '../studio/default-panels.json';
+import DEFAULT_PANELS from '../studio/panels-v2.json';
 
-const MODEL_URL = '/models/jersey-basic-v-neck.glb';
+const MODEL_URL = '/models/jersey-basic-v-neck-v2-lite.glb';
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const lerp = (a, b, t) => a + (b - a) * t;
 const smooth = t => t * t * (3 - 2 * t);
