@@ -429,6 +429,8 @@ export async function createStage(canvas, opts = {}) {
     for (const key of KEYS) cur[key] += (goal[key] - cur[key]) * k;
     U.uTime.value = now / 1000; U.uUnfold.value = cur.unfold; U.uWind.value = REDUCED ? 0 : cur.wind;
     U.uPushAmt.value += ((pushOn && !REDUCED ? 1 : 0) - U.uPushAmt.value) * (1 - Math.exp(-dt * 6));
+    // bayangan dihitung dari bentuk 3D asli, jadi saat pola dibentangkan ia jatuh sebagai siluet di panel: matikan
+    if (tier === 'high') { const want = cur.unfold < .02; if (want !== shadowOn) { shadowOn = want; g.meshes.forEach(m => { m.receiveShadow = want; }); } }
     floorBlob.material.opacity = (isDark() ? .85 : .5) * (1 - clamp(cur.unfold * 3, 0, 1)); floor.material.opacity = .32 * (1 - clamp(cur.unfold * 3, 0, 1));
     if (wipeAnim) { U.uWipe.value += dt * 1.5; if (U.uWipe.value > 1.2) { U.uWipe.value = 2; wipeAnim = false; } }
     if (motion && now - lastRepaint > 33) { applyMotion(now); repaint(true); lastRepaint = now; }
@@ -445,6 +447,7 @@ export async function createStage(canvas, opts = {}) {
     // turunkan kualitas bila pengguna tertinggal
     if (++frames > 50) { acc += dt; if (frames % 90 === 0) { const avg = acc / 90 * 1000; acc = 0; if (avg > 36 && tier !== 'low' && !opts.lock) downgrade(); } }
   }
+  let shadowOn = true;
   function downgrade() {
     tier = tier === 'high' ? 'mid' : 'low';
     renderer.shadowMap.enabled = false; key.castShadow = false; floor.visible = false;
