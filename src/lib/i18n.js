@@ -6,10 +6,12 @@
 // Urutan pemilihan bahasa: ?lang=en|id di URL → pilihan tersimpan → bahasa browser / zona waktu.
 // Pengunjung dari Indonesia (bahasa browser "id" atau zona waktu WIB/WITA/WIT) otomatis ID, lainnya EN.
 
+import { DEMO } from './demo.js';
 const KEY = 'jpl-lang';
 const ID_TZ = /^Asia\/(Jakarta|Pontianak|Makassar|Jayapura)$/;
 
 function detect() {
+  if (DEMO) return 'en'; // situs demo untuk pembeli lisensi: selalu bahasa Inggris
   // Halaman yang isinya satu bahasa (mis. /license berbahasa Inggris) mengunci bahasanya lewat
   // <meta name="jpl-lang" content="en">. Tidak disimpan, jadi tidak mengubah pilihan di halaman lain.
   const forced = document.querySelector('meta[name="jpl-lang"]')?.content;

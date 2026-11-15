@@ -198,3 +198,8 @@ h1, h2, h3 { text-wrap: balance; }
   .lang-switch button[aria-pressed="true"] { display: none; }
   .lang-switch button { height: 32px; min-width: 32px; padding: 0; border: 1px solid var(--line); color: var(--ink); }
 }
+
+/* Situs demo untuk pembeli lisensi: sembunyikan harga langganan, FAQ member, dan WhatsApp. */
+.demo #harga, .demo #faq, .demo .faq-home, .demo a[href*="wa.me"], .demo .js-wa-home { display: none !important; }
+.demo #btnProjects { display: none !important; }
+.demo a[href="/#harga"], .demo a[href="/#faq"] { display: none !important; }

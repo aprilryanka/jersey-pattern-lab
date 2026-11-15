@@ -1,4 +1,5 @@
 import { t, locale } from './i18n.js';
+import { DEMO, watermark } from './demo.js';
 
 export const $ = (s, r = document) => r.querySelector(s);
 export const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -47,7 +48,8 @@ export function modal(title, body, { wide = false, onClose } = {}) {
 }
 
 /** Unduh blob sebagai file. */
-export function download(blob, name) {
+export async function download(blob, name) {
+  if (DEMO) blob = await watermark(blob);
   const u = URL.createObjectURL(blob);
   const a = E('a', { href: u, download: name });
   document.body.append(a); a.click(); a.remove();

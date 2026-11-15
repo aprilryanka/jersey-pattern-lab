@@ -6,6 +6,7 @@ import { sb, isPro } from '../lib/supabase.js';
 import { mountNav } from '../lib/nav.js';
 import { t, panelLabel, locale } from '../lib/i18n.js';
 import { $, $$, E, toast, modal, download, withProgress, shrinkImage, waLink } from '../lib/ui.js';
+import { DEMO } from '../lib/demo.js';
 import { BASIC_STYLES, BASIC_PALETTES, drawBasicThumb, drawBasic } from '../studio/basic.js';
 import { initAdvanced } from '../studio/advanced.js';
 import { layoutModel, renderAtlas, renderLayers, FONTS, setImageReadyHandler } from '../studio/atlas.js';
@@ -521,6 +522,7 @@ async function snapshotBlob(size = 480) {
   return new Promise(r => c.toBlob(r, 'image/jpeg', .85));
 }
 async function save() {
+  if (DEMO) { scheduleDraft(); toast('Saving projects is turned off in the demo. Your design stays in this browser.'); return; }
   if (!me) { scheduleDraft(); location.href = '/login?next=' + encodeURIComponent('/studio'); return; }
   const btn = $('#btnSave'); btn.disabled = true; btn.textContent = 'Menyimpan…';
   try {
@@ -552,7 +554,9 @@ $('#btnSave').onclick = save;
 addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); save(); } });
 $('#projName').oninput = markDirty;
 if ($('#projName').value === 'Desain tanpa judul') $('#projName').value = t('Desain tanpa judul');
-{ const cta = document.querySelector('.studio-cta-btn'); if (cta) cta.href = waLink('Halo, saya mau cetak jersey fisik dari Jersey Pattern Lab'); }
+{ const cta = document.querySelector('.studio-cta-btn');
+  if (cta && DEMO) { cta.href = '/license#pricing'; cta.removeAttribute('target'); cta.textContent = 'Get this studio for your brand'; cta.dataset.noI18n = ''; const lb = document.querySelector('.studio-cta-label'); if (lb) { lb.textContent = 'Want this on your own website?'; lb.dataset.noI18n = ''; } }
+  else if (cta) cta.href = waLink('Halo, saya mau cetak jersey fisik dari Jersey Pattern Lab'); }
 
 async function openProject(id) {
   const { data, error } = await sb.from('projects').select('*').eq('id', id).maybeSingle();
@@ -563,6 +567,7 @@ async function openProject(id) {
   history.replaceState(null, '', '/studio?p=' + projectId);
 }
 $('#btnProjects').onclick = async () => {
+  if (DEMO) { toast('Projects are turned off in the demo.'); return; }
   if (!me) { location.href = '/login?next=/studio'; return; }
   const grid = E('div', { className: 'projgrid' }, E('p', { className: 'hint', text: 'Memuat…' }));
   const m = modal('Project saya', E('div', { style: { display: 'grid', gap: '12px' } },
@@ -667,7 +672,7 @@ initArc();
 (async () => {
   boot(.15, 'Memeriksa akun…');
   me = await mountNav('studio', { tag: 'STUDIO' });
-  pro = isPro(me) || (import.meta.env.DEV && location.search.includes('devpro'));
+  pro = DEMO || isPro(me) || (import.meta.env.DEV && location.search.includes('devpro'));
   protectImages();
   if (!pro) { // banner upgrade untuk akun gratis / belum login
     $('#upBannerLink').href = me ? '/billing' : '/login?mode=signup&next=/billing';
@@ -682,7 +687,7 @@ initArc();
   boot(.85, 'Menggambar pola…');
   const fontsReady = Promise.all(FONTS.slice(0, 6).map(f => document.fonts.load(`80px "${f[1]}"`).catch(() => { }))).then(invalidateLayers);
   const pid = new URLSearchParams(location.search).get('p');
-  if (pid && me) await openProject(pid);
+  if (pid && me && !DEMO) await openProject(pid);
   else {
     try {
       const d = JSON.parse(localStorage.getItem('jpl_draft') || 'null');
