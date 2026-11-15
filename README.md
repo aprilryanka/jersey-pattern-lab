@@ -1,6 +1,6 @@
 # Jersey Pattern Lab v2
 
-SaaS desain jersey: generator pattern (Basic + Advanced), pratinjau 3D, dan export pola jahit skala 1:1.
+SaaS desain jersey: generator pattern (Basic + Advanced), pratinjau 3D, dan export pola jahit.
 Stack: Vite (vanilla JS, multi-halaman) + Three.js + Supabase (auth, database, storage).
 
 ## Halaman

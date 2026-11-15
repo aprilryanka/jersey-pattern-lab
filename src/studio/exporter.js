@@ -1,4 +1,4 @@
-// Export: pattern (tile), pola jahit skala 1:1 (SVG/PNG), dan snapshot 3D.
+// Export: pattern (tile), pola jahit (SVG/PNG), dan snapshot 3D.
 import { drawBasic } from './basic.js';
 import { isEn, locale } from '../lib/i18n.js';
 import { renderAtlas, renderPanel, panelPath } from './atlas.js';
@@ -20,10 +20,10 @@ export async function exportPattern({ S, adv, size, jpg, texSize }) {
   return toBlob(c, jpg ? 'image/jpeg' : 'image/png', .93);
 }
 
-const W_ = isEn ? { size: 'size', title: '1:1 scale sewing pattern (mm)', scale: '1:1 scale (mm)', print: 'print at 100% without "fit to page"', check: '10 cm (scale check)' }
-  : { size: 'ukuran', title: 'pola jahit skala 1:1 (mm)', scale: 'skala 1:1 (mm)', print: 'cetak 100% tanpa "fit to page"', check: '10 cm (cek skala)' };
+const W_ = isEn ? { size: 'size', title: 'sewing pattern (mm)', scale: 'units: mm', print: 'print at 100% without "fit to page"', check: '10 cm (scale check)' }
+  : { size: 'ukuran', title: 'pola jahit (mm)', scale: 'satuan mm', print: 'cetak 100% tanpa "fit to page"', check: '10 cm (cek skala)' };
 
-/** Pola jahit SVG skala 1:1 (mm). Setiap panel = gambar desain + garis potong + label. */
+/** Pola jahit SVG (mm). Setiap panel = gambar desain + garis potong + label. */
 export async function exportSewingSVG({ L, S, adv, dpi = 100, modelName = 'Jersey', size = 'M', progress = () => { } }) {
   const sc = dpi / 25.4, m = 15;
   const minX = L.uMin - m, maxY = L.vTop + m, W = L.Wmm + m * 2, H = L.Hmm + m * 2 + 30;

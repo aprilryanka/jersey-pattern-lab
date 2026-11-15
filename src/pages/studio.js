@@ -587,7 +587,7 @@ function newProject() { projectId = null; $('#projName').value = t('Desain tanpa
 
 /* ---------------- Export (khusus Pro) ---------------- */
 function exportUpsell() {
-  const feats = ['Pattern PNG/JPG hingga 3000 px', 'Pola jahit skala 1:1 (SVG vektor atau PNG cetak)', 'Snapshot 3D hingga 4096 px, latar studio, polos, atau transparan'];
+  const feats = ['Pattern PNG/JPG hingga 3000 px', 'Pola jahit (SVG vektor atau PNG cetak)', 'Snapshot 3D hingga 4096 px, latar studio, polos, atau transparan'];
   modal('Export khusus member Pro', E('div', { style: { display: 'grid', gap: '14px' } },
     E('p', { style: { margin: 0 }, text: 'Akun gratis bisa mendesain dan melihat hasilnya di 2D dan 3D. Untuk mengunduh file, berlangganan Pro.' }),
     E('ul', { className: 'upsell' }, feats.map(f => E('li', { text: f }))),
@@ -609,7 +609,7 @@ $('#btnExport').onclick = () => {
   const pSize = E('select', { className: 'in' }, [1024, 2048, 3000].map(v => E('option', { value: v, text: v + ' px', selected: v === 3000 })));
   const pFmt = E('select', { className: 'in' }, E('option', { value: 'png', text: 'PNG' }), E('option', { value: 'jpg', text: 'JPG' }));
   const bPat = E('button', { className: 'btn primary', text: 'Unduh pattern' });
-  const sFmt = E('select', { className: 'in' }, E('option', { value: 'svg', text: 'SVG skala 1:1 (vektor + gambar)' }), E('option', { value: 'png', text: 'PNG lembar penuh' }));
+  const sFmt = E('select', { className: 'in' }, E('option', { value: 'svg', text: 'SVG (vektor + gambar)' }), E('option', { value: 'png', text: 'PNG lembar penuh' }));
   const sDpi = E('select', { className: 'in' }, [[72, '72 dpi (cepat)'], [100, '100 dpi'], [150, '150 dpi (cetak)']].map(([v, t]) => E('option', { value: v, text: t, selected: v === 100 })));
   const bSew = E('button', { className: 'btn primary', text: 'Unduh pola jahit' });
   const tView = E('select', { className: 'in' }, [['current', 'Sudut saat ini'], ['front', 'Depan'], ['back', 'Belakang'], ['three', 'Depan · belakang · samping']].map(([v, t]) => E('option', { value: v, text: t })));

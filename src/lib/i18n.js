@@ -58,15 +58,15 @@ const EN = {
   'Jersey 3D interaktif': 'Interactive 3D jersey',
   'Generator pattern · Pratinjau 3D · Pola jahit': 'Pattern generator · 3D preview · Sewing pattern',
   'Desain jersey, lihat di 3D, langsung jadi pola jahit.': 'Design a jersey, see it in 3D, get a print-ready sewing pattern.',
-  'Pilih motif atau racik pattern sendiri, tambah nama, nomor, logo, dan sponsor. Semuanya tampil di model 3D dan diekspor sebagai pola jahit skala 1:1 yang siap dicetak.':
-    'Pick a motif or build your own pattern, then add names, numbers, logos and sponsors. Everything shows on a 3D model and exports as a 1:1 scale sewing pattern, ready to print.',
+  'Pilih motif atau racik pattern sendiri, tambah nama, nomor, logo, dan sponsor. Semuanya tampil di model 3D dan diekspor sebagai pola jahit yang siap dicetak.':
+    'Pick a motif or build your own pattern, then add names, numbers, logos and sponsors. Everything shows on a 3D model and exports as a sewing pattern, ready to print.',
   'Mulai desain gratis': 'Start designing free', 'Lihat harga': 'See pricing',
   'Pratinjau 3D realistis': 'Realistic 3D preview',
   'Kainnya terasa, bukan gambar datar.': 'You can feel the fabric, not a flat picture.',
   'Rajutan, kilap serat, jahitan panel, dan bayangan lantai ikut dihitung. Latar studio, polos, atau transparan untuk materi promosi.':
     'Knit texture, fiber sheen, panel seams and floor shadow are all rendered. Studio, solid or transparent backgrounds for your promo materials.',
   'Detail kain': 'Fabric details', 'Rajut 2,7 mm': '2.7 mm knit', 'Kilap serat': 'Fiber sheen', 'Jahitan tiap panel': 'Seams on every panel',
-  'Pola jahit skala 1:1': '1:1 scale sewing pattern',
+  'Pola jahit': 'sewing pattern',
   'Satu desain, jadi pola siap cetak.': 'One design, one print-ready pattern.',
   'Setiap panel diekspor lengkap dengan desain, garis potong, dan arah serat. Motif menyambung di jahitan sisi seperti kain fullprint.':
     'Every panel exports with its design, cut lines and grain direction. The motif continues across the side seams, just like full-print fabric.',
@@ -88,7 +88,7 @@ const EN = {
   'Alurnya': 'How it works', 'Desain di Studio': 'Design in the Studio',
   'Pilih motif, atur warna, tambah nama dan nomor pemain.': 'Pick a motif, set the colors, add player names and numbers.',
   'Export pola jahit': 'Export the sewing pattern',
-  'Unduh SVG skala 1:1 untuk printer sublimasi atau tim produksi.': 'Download a 1:1 scale SVG for your sublimation printer or production team.',
+  'Unduh SVG untuk printer sublimasi atau tim produksi.': 'Download an SVG for your sublimation printer or production team.',
   'Cetak jersey fisik': 'Print physical jerseys',
   'Kirim ke kami lewat WhatsApp. Estimasi 14 hari kerja untuk di bawah 100 pcs.': 'Send it to us on WhatsApp. About 14 working days for orders under 100 pcs.',
   'Jadikan desain jersey kamu menjadi jersey fisik.': 'Turn your jersey design into real jerseys.',
@@ -98,8 +98,8 @@ const EN = {
   '/ bulan': '/ month', 'selamanya': 'forever',
   'Mode Basic: 8 motif': 'Basic mode: 8 motifs', 'Pratinjau 3D dan pola jahit 2D': '3D preview and 2D sewing pattern',
   'Simpan 3 project': 'Save 3 projects', 'Tanpa export file': 'No file export', 'Mode Advanced penuh': 'Full Advanced mode',
-  'Export pattern hingga 3000 px': 'Pattern export up to 3000 px', 'Export pola jahit skala 1:1 (SVG/PNG)': '1:1 scale sewing pattern export (SVG/PNG)',
-  'Export pola jahit skala 1:1': '1:1 scale sewing pattern export', 'Snapshot 3D hingga 4096 px': '3D snapshots up to 4096 px',
+  'Export pattern hingga 3000 px': 'Pattern export up to 3000 px', 'Export pola jahit (SVG/PNG)': 'sewing pattern export (SVG/PNG)',
+  'Export pola jahit': 'sewing pattern export', 'Snapshot 3D hingga 4096 px': '3D snapshots up to 4096 px',
   'Project tanpa batas': 'Unlimited projects', 'Semua fitur Pro': 'All Pro features', '5 anggota': '5 members', 'Prioritas produksi': 'Production priority',
   'Apa bedanya Basic dan Advanced?': 'What is the difference between Basic and Advanced?',
   'Basic berisi 8 motif cepat. Advanced memakai generator pattern Jersey Pattern Lab lengkap: 9 gaya noise, palet, finishing, efek glass, brush, dan foto sebagai sumber pattern. Advanced penuh khusus member Pro.':
@@ -108,8 +108,8 @@ const EN = {
     'Basic has 8 quick motifs (stripes, chevron, waves, gradient, shards, camo, halftone, solid). Advanced uses the Jersey Pattern Lab pattern generator: 9 noise styles, palettes, finishing, glass effects, brushes and photos as a pattern source. Full Advanced is for Pro members.',
   'Berapa harga langganan Pro?': 'How much is the Pro subscription?',
   'Rp150.000 per bulan (30 hari).': 'Rp150,000 per month (30 days).',
-  'Rp150.000 per bulan (30 hari). Pro membuka mode Advanced penuh dan semua export: pattern hingga 3000 px, pola jahit skala 1:1, dan snapshot 3D hingga 4096 px, plus project tanpa batas. Akun gratis bisa mendesain dan melihat hasilnya, tapi tidak bisa mengunduh file.':
-    'Rp150,000 per month (30 days). Pro unlocks full Advanced mode and every export: patterns up to 3000 px, 1:1 scale sewing patterns and 3D snapshots up to 4096 px, plus unlimited projects. Free accounts can design and preview, but cannot download files.',
+  'Rp150.000 per bulan (30 hari). Pro membuka mode Advanced penuh dan semua export: pattern hingga 3000 px, pola jahit, dan snapshot 3D hingga 4096 px, plus project tanpa batas. Akun gratis bisa mendesain dan melihat hasilnya, tapi tidak bisa mengunduh file.':
+    'Rp150,000 per month (30 days). Pro unlocks full Advanced mode and every export: patterns up to 3000 px, sewing patterns and 3D snapshots up to 4096 px, plus unlimited projects. Free accounts can design and preview, but cannot download files.',
   'Bagaimana cara berlangganan?': 'How do I subscribe?',
   'Buat akun, buka halaman Langganan, transfer ke rekening BCA yang tertera, lalu upload bukti transfer. Admin memverifikasi dan akun Pro aktif 30 hari.':
     'Create an account, open the Subscription page, transfer to the BCA account shown and upload your proof of payment. An admin verifies it and Pro is active for 30 days. Paying from outside Indonesia? Message us on WhatsApp for an international payment option.',
@@ -123,8 +123,8 @@ const EN = {
   'Logo asli (PNG transparan atau vektor), file pola jahit dari Studio, rincian ukuran, serta nama dan nomor pemain.':
     'Original logos (transparent PNG or vector), the sewing pattern file from the Studio, a size breakdown, and player names and numbers.',
   'Apa isi export pola jahit?': 'What is in the sewing pattern export?',
-  'File SVG skala 1:1 dalam milimeter berisi tiap panel (depan, belakang, lengan, rib) lengkap dengan desain dan garis potong, siap dibuka di Illustrator, CorelDraw, atau Inkscape, plus PNG resolusi cetak.':
-    'A 1:1 scale SVG in millimeters with every panel (front, back, sleeves, rib) including the design and cut lines, ready for Illustrator, CorelDraw or Inkscape, plus a print-resolution PNG.',
+  'File SVG dalam milimeter berisi tiap panel (depan, belakang, lengan, rib) lengkap dengan desain dan garis potong, siap dibuka di Illustrator, CorelDraw, atau Inkscape, plus PNG resolusi cetak.':
+    'An SVG in millimeters with every panel (front, back, sleeves, rib) including the design and cut lines, ready for Illustrator, CorelDraw or Inkscape, plus a print-resolution PNG.',
   'Halo Jerseypreneur, saya mau cetak jersey fullprint dari desain Jersey Pattern Lab. Boleh info harga dan bahan?':
     'Hi Jerseypreneur, I would like to print full-print jerseys from my Jersey Pattern Lab design. Could you share prices and fabric options?',
   'Halo, saya mau cetak jersey fisik dari Jersey Pattern Lab': 'Hi, I would like to print physical jerseys from Jersey Pattern Lab',
@@ -240,7 +240,7 @@ const EN = {
   'Berlangganan Pro · Rp150.000/bulan': 'Subscribe to Pro · Rp150,000/month', 'Project tidak ditemukan': 'Project not found', 'Dibuka': 'Opened',
   '+ Desain baru': '+ New design', 'Akun gratis: maksimal 3 project': 'Free account: up to 3 projects', 'Belum ada project tersimpan.': 'No saved projects yet.',
   'Project dihapus': 'Project deleted', 'Desain baru': 'New design', 'Pattern PNG/JPG hingga 3000 px': 'Pattern PNG/JPG up to 3000 px',
-  'Pola jahit skala 1:1 (SVG vektor atau PNG cetak)': '1:1 scale sewing pattern (SVG vector or print PNG)',
+  'Pola jahit (SVG vektor atau PNG cetak)': 'sewing pattern (SVG vector or print PNG)',
   'Snapshot 3D hingga 4096 px, latar studio, polos, atau transparan': '3D snapshots up to 4096 px with studio, solid or transparent background',
   'Export khusus member Pro': 'Exports are for Pro members',
   'Akun gratis bisa mendesain dan melihat hasilnya di 2D dan 3D. Untuk mengunduh file, berlangganan Pro.':
@@ -249,7 +249,7 @@ const EN = {
   'Desainmu tetap tersimpan di browser ini.': 'Your design stays saved in this browser.', 'Upload gambar khusus member Pro': 'Image upload is for Pro members',
   'Pakai gambar sendiri sebagai isi panel atau sumber pattern hanya untuk member Pro. Generator pattern acak dan semua pilihan lain tetap gratis.':
     'Using your own images as a panel fill or pattern source is for Pro members. The random pattern generator and every other option stay free.',
-  'Unduh pattern': 'Download pattern', 'SVG skala 1:1 (vektor + gambar)': '1:1 scale SVG (vector + image)', 'PNG lembar penuh': 'Full-sheet PNG',
+  'Unduh pattern': 'Download pattern', 'SVG (vektor + gambar)': 'SVG (vector + image)', 'PNG lembar penuh': 'Full-sheet PNG',
   '72 dpi (cepat)': '72 dpi (fast)', '150 dpi (cetak)': '150 dpi (print)', 'Unduh pola jahit': 'Download sewing pattern', 'Sudut saat ini': 'Current angle',
   'Depan · belakang · samping': 'Front · back · side', 'Unduh snapshot 3D': 'Download 3D snapshot',
   'Tile pattern Advanced yang bisa diulang tanpa sambungan.': 'Advanced pattern tile that repeats seamlessly.', 'Motif Basic area 60 × 60 cm.': 'Basic motif, 60 × 60 cm area.',
@@ -278,8 +278,8 @@ const EN = {
     'Every change shows instantly on the 3D model. Drag to rotate, scroll to zoom, or pick a camera angle. Turn on Pan (or right-click) to move the model.',
   'Mode tampilan': 'View mode', 'Pilih Split, Pola, 3D, atau Pattern. Di HP, pakai satu tampilan saja agar lebih ringan.': 'Choose Split, Panels, 3D or Pattern. On phones, use a single view to keep it light.',
   'Latar dan kain': 'Background and fabric', 'Ganti latar studio, polos, atau transparan, dan atur tekstur rajutan kain.': 'Switch between studio, solid or transparent backgrounds and adjust the knit texture.',
-  'Unduh pattern, pola jahit skala 1:1 (SVG/PNG), atau snapshot 3D. Pola jahit dan resolusi tinggi khusus member Pro.':
-    'Download the pattern, a 1:1 scale sewing pattern (SVG/PNG) or a 3D snapshot. Sewing patterns and high resolution are for Pro members.',
+  'Unduh pattern, pola jahit (SVG/PNG), atau snapshot 3D. Pola jahit dan resolusi tinggi khusus member Pro.':
+    'Download the pattern, a sewing pattern (SVG/PNG) or a 3D snapshot. Sewing patterns and high resolution are for Pro members.',
   'Simpan project': 'Save project', 'Simpan desain ke akunmu supaya bisa dibuka lagi kapan saja.': 'Save the design to your account so you can open it again any time.',
 
   // ---- studio: Advanced generator
@@ -471,11 +471,11 @@ function trTree(root) {
 }
 
 const META = {
-  'Generator pattern jersey dengan pratinjau 3D dan export pola jahit skala 1:1. Desain, lihat di 3D, lalu cetak jersey fullprint.':
-    'Jersey pattern generator with 3D preview and 1:1 scale sewing pattern export. Design, see it in 3D, then print full-print jerseys.',
-  'Desain jersey, lihat di 3D, langsung jadi pola jahit skala 1:1.': 'Design a jersey, see it in 3D, get a 1:1 scale sewing pattern.',
-  'Desain jersey dengan generator pattern, lihat langsung di 3D, dan export pola jahit skala 1:1.':
-    'Design jerseys with a pattern generator, see them live in 3D and export 1:1 scale sewing patterns.',
+  'Generator pattern jersey dengan pratinjau 3D dan export pola jahit. Desain, lihat di 3D, lalu cetak jersey fullprint.':
+    'Jersey pattern generator with 3D preview and sewing pattern export. Design, see it in 3D, then print full-print jerseys.',
+  'Desain jersey, lihat di 3D, langsung jadi pola jahit.': 'Design a jersey, see it in 3D, get a sewing pattern.',
+  'Desain jersey dengan generator pattern, lihat langsung di 3D, dan export pola jahit.':
+    'Design jerseys with a pattern generator, see them live in 3D and export sewing patterns.',
 };
 
 /** Elemen [data-lang="en"] hanya tampil di EN, [data-lang="id"] hanya di ID. */
