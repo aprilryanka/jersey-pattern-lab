@@ -37,7 +37,7 @@ npm run dev
 
 1. Import repo ini di vercel.com → New Project. Framework: **Vite** (otomatis). Build `npm run build`, output `dist`.
 2. Environment variables:
-   - `VITE_SUPABASE_URL` = `https://mwprkmudrelyxevdsncr.supabase.co`
+   - `VITE_SUPABASE_URL` = `https://dwcniyegvimcahfgoafd.supabase.co`
    - `VITE_SUPABASE_ANON_KEY` = publishable key (lihat `.env.example`)
 3. Setelah dapat domain (mis. `jersey-pattern-lab.vercel.app`), buka Supabase → Authentication → URL Configuration:
    - **Site URL**: domain Vercel kamu

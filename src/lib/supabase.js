@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Publishable key memang aman di sisi browser; keamanan data dijaga oleh RLS di database.
-const url = import.meta.env.VITE_SUPABASE_URL || 'https://mwprkmudrelyxevdsncr.supabase.co';
-const key = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_jciBM3fo-VGTkDySvK-rtQ_ShIUhDlf';
+const url = 'https://dwcniyegvimcahfgoafd.supabase.co';
+const key = 'sb_publishable_DL73plhVrGPmKCUTV3yK3g_ahUcrqdU';
 export const sb = createClient(url, key, { auth: { persistSession: true, autoRefreshToken: true } });
 
 let _me = null;
