@@ -161,6 +161,6 @@ export function drawBasicThumb(canvas, st) {
   x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, canvas.width, canvas.height);
   x.save(); x.scale(canvas.width / sz, canvas.height / sz);
   if (st.style === 'trace') st = { ...st, trace: st.trace && { ...st.trace, tile: (st.trace.tile || 90) * .5 } };
-  drawBasic(x, { x0: 0, y0: 0, x1: sz, y1: sz }, { ...st, gh: sz });
+  drawBasic(x, { x0: 0, y0: 0, x1: sz, y1: sz }, { ...st, gh: sz, thumb: true });
   x.restore();
 }

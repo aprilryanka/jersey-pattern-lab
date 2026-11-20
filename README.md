@@ -63,6 +63,6 @@ dari posisi 3D (depan/belakang/lengan/rib); bisa dikoreksi sebelum disimpan.
 ## Kategori pattern (Studio)
 
 Basic, Tie-dye, Strip, dan Fauna memakai satu mesin gambar (`drawBasic` di `src/studio/basic.js`); Advanced punya generator noise sendiri.
-Daftar kategori, motif, dan palet ada di `CATEGORIES` (`basic.js`). Motif Tie-dye (10), Strip (17), dan Fauna (11) ada di
-`src/studio/motifs.js`. Menambah motif: tambahkan `[id, label]` di daftar style, palet di daftar palet, lalu satu `case` di fungsi gambar kategorinya
+Daftar kategori, motif, dan palet ada di `CATEGORIES` (`basic.js`). Motif Strip (17) dan Fauna (11) ada di `src/studio/motifs.js`; Tie-dye (7) ada di `src/studio/dye.js` (field pewarna per piksel,
+di-cache sebagai tile seamless 640 px; ganti warna tidak menghitung ulang). Menambah motif: tambahkan `[id, label]` di daftar style, palet di daftar palet, lalu satu `case` di fungsi gambar kategorinya
 (id berawalan `td_`, `st_`, `fa_`). Tambahkan terjemahan EN label baru di `src/lib/i18n.js`.

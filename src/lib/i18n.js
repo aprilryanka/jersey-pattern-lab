@@ -197,9 +197,9 @@ const EN = {
   'Live preview': 'Live preview', 'Pratinjau pattern': 'Pattern preview', 'Ulangan pratinjau': 'Preview repeat', 'Kontrol desain': 'Design controls',
   'Edit': 'Edit', 'Elemen': 'Elements', 'Mode generator': 'Generator mode', 'Basic': 'Basic', 'Advanced': 'Advanced',
   'Tie-dye': 'Tie-dye', 'Strip': 'Stripes', 'Fauna': 'Animal prints', 'Pilih kategori pattern': 'Choose a pattern category',
-  'Basic berisi motif cepat, Tie-dye berisi 10 gaya celup, Strip berisi 17 jenis strip jersey, dan Fauna berisi motif hewan seperti zebra dan macan tutul. Advanced memakai generator Jersey Pattern Lab lengkap: gaya noise, palet, finishing, efek glass, dan foto sebagai sumber pattern.':
-    'Basic has quick motifs, Tie-dye has 10 dye styles, Stripes has 17 jersey stripe types, and Fauna has animal prints such as zebra and leopard. Advanced uses the full Jersey Pattern Lab generator: noise styles, palettes, finishing, glass effects and photos as a pattern source.',
-  'Pusaran': 'Swirl', 'Mini spiral': 'Mini spiral', 'Lipat': 'Pleated', 'Lava': 'Lava', 'Ice dye': 'Ice dye',
+  'Basic berisi motif cepat, Tie-dye berisi 7 gaya celup realistis, Strip berisi 17 jenis strip jersey, dan Fauna berisi motif hewan seperti zebra dan macan tutul. Advanced memakai generator Jersey Pattern Lab lengkap: gaya noise, palet, finishing, efek glass, dan foto sebagai sumber pattern.':
+    'Basic has quick motifs, Tie-dye has 7 realistic dye styles, Stripes has 17 jersey stripe types, and Fauna has animal prints such as zebra and leopard. Advanced uses the full Jersey Pattern Lab generator: noise styles, palettes, finishing, glass effects and photos as a pattern source.',
+  'Pusaran': 'Swirl', 'Burst': 'Burst', 'Crush': 'Crush', 'Awan': 'Cloud', 'Mini spiral': 'Mini spiral', 'Lipat': 'Pleated', 'Lava': 'Lava', 'Ice dye': 'Ice dye',
   'Klasik': 'Classic', 'Ganda': 'Double', 'Lebar-tipis': 'Wide-thin', 'Tiga': 'Triple', 'Selempang': 'Sash', 'Pudar': 'Fade', 'Menebal': 'Growing',
   'Bergelombang': 'Wavy', 'Putus-putus': 'Dashed', 'Patah': 'Broken',
   'Harimau': 'Tiger', 'Macan tutul': 'Leopard', 'Jerapah': 'Giraffe', 'Sapi': 'Cow', 'Ular': 'Snake', 'Sisik ikan': 'Fish scales', 'Merak': 'Peacock',

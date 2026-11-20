@@ -1,12 +1,10 @@
-// Motif kategori Tie-dye, Strip, dan Fauna. Digambar di "ruang garmen" (mm, y ke bawah), sama seperti Basic.
+import { DYE_STYLES, drawDye } from './dye.js';
+
+// Motif kategori Tie-dye (dye.js), Strip, dan Fauna. Digambar di "ruang garmen" (mm, y ke bawah), sama seperti Basic.
 // Posisi acak memakai hash per sel grid global, jadi motif menyambung antar panel.
 // Warna: c1 = dasar, c2 = warna utama motif, c3 = aksen.
 
-export const TIEDYE_STYLES = [
-  ['td_spiral', 'Spiral'], ['td_swirl', 'Pusaran'], ['td_mini', 'Mini spiral'], ['td_sunburst', 'Sunburst'],
-  ['td_bullseye', 'Bullseye'], ['td_diamond', 'Diamond'], ['td_pleat', 'Lipat'], ['td_ombre', 'Ombre'],
-  ['td_ice', 'Ice dye'], ['td_marble', 'Lava'],
-];
+export const TIEDYE_STYLES = DYE_STYLES;
 export const STRIPE_STYLES = [
   ['st_classic', 'Klasik'], ['st_pin', 'Pinstripe'], ['st_chalk', 'Chalk'], ['st_double', 'Ganda'],
   ['st_wide_thin', 'Lebar-tipis'], ['st_triple', 'Tiga'], ['st_hoops', 'Hoops'], ['st_diag', 'Diagonal'],
@@ -20,10 +18,10 @@ export const FAUNA_STYLES = [
   ['fa_snake', 'Ular'], ['fa_scales', 'Sisik ikan'], ['fa_peacock', 'Merak'],
 ];
 
-export const TIEDYE_PALETTES = [
-  ['#fdfdfd', '#ff4f9a', '#2f6bff'], ['#fffbe8', '#ffb703', '#fb5607'], ['#f8f9fa', '#06d6a0', '#118ab2'], ['#ffffff', '#7b2cbf', '#ff4fd8'],
-  ['#0d1b2a', '#ff006e', '#3a86ff'], ['#111111', '#ffbe0b', '#fb5607'], ['#f0fff4', '#2dc653', '#0077b6'], ['#fff1e6', '#e63946', '#f4a261'],
-  ['#e0f2ff', '#1d4ed8', '#7dd3fc'], ['#ffffff', '#111111', '#8a8a8a'], ['#ffe5ec', '#ff8fab', '#8338ec'], ['#fefae0', '#bc6c25', '#606c38'],
+export const TIEDYE_PALETTES = [ // c1 = bagian terang/resist, c2 = warna tengah, c3 = celupan paling pekat
+  ['#f3f8fd', '#3a6fae', '#0c2552'], ['#ffd6e8', '#e83e9a', '#15131a'], ['#f1f1f1', '#8d8d8d', '#1b1b1d'], ['#eefbff', '#2ab3d8', '#0a3f7a'],
+  ['#fff4e0', '#ff8a3d', '#7a1d4a'], ['#f4eaff', '#9b5cff', '#2a1466'], ['#f2fff4', '#2dc98a', '#0b3d3a'], ['#fff0f0', '#e63946', '#3a0b18'],
+  ['#fffbe6', '#f2b705', '#7a3b00'], ['#e8f0ff', '#5b7bd5', '#1a1f5c'], ['#fdeff7', '#ff4fd8', '#3a1a8f'], ['#f7f1e3', '#a7885a', '#2b2216'],
 ];
 export const STRIPE_PALETTES = [
   ['#ffffff', '#111111', '#e8c547'], ['#ffffff', '#0b3d91', '#f2b705'], ['#c8102e', '#ffffff', '#111111'], ['#0b3d91', '#ffffff', '#e63946'],
@@ -43,7 +41,7 @@ export const STYLE_PALETTE = {
 
 // Motif berukuran besar perlu area thumbnail lebih luas supaya terlihat utuh.
 export const THUMB_SCALE = {
-  td_spiral: 2.2, td_swirl: 2.2, td_mini: 1.2, td_sunburst: 1.5, td_bullseye: 2.2, td_diamond: 2.2, td_pleat: 2, td_ombre: 1, td_ice: 2.4, td_marble: 2.2,
+  td_spiral: 3.3, td_swirl: 3.3, td_burst: 3, td_mini: 1.8, td_ombre: 3.8, td_crush: 2.7, td_cloud: 3.8,
   st_sash: 3, st_racing: 1.6, st_grow: 2, st_triple: 1.4, st_barcode: 1.4, st_broken: 1.2,
   fa_zebra: 2, fa_tiger: 1.8, fa_leopard: 1.6, fa_jaguar: 1.6, fa_cheetah: 1.3, fa_giraffe: 1.8, fa_cow: 3.2, fa_dalmatian: 1.5, fa_snake: 2.4, fa_scales: 1, fa_peacock: 1.8,
 };
@@ -182,116 +180,6 @@ function drawStripe(ctx, r, st, c) {
         const len = sh * (.55 + hash(i, j, seed, 13) * .45);
         ctx.fillRect(i * w, j * sh + hash(i, j, seed, 12) * (sh - len), w * .64, len);
       });
-      break;
-    }
-    default: return false;
-  }
-  return true;
-}
-
-/* ---------- TIE-DYE ---------- */
-function spiral(ctx, cx, cy, R, arms, twist, cols, salt, seed) {
-  const step = TAU / arms, N = 16;
-  const ang = (a, rr) => a * step + twist * rr + (hash(salt, a % arms, seed, 3) - .5) * .1;
-  const rad = (a, rr) => R * rr * (1 + (hash(salt, (a % arms) * 31 + Math.round(rr * 9), seed, 4) - .5) * .07);
-  const edges = [];
-  for (let a = 0; a <= arms; a++) { const pts = []; for (let s = 0; s <= N; s++) { const rr = s / N, an = ang(a, rr), r2 = rad(a, rr); pts.push([cx + Math.cos(an) * r2, cy + Math.sin(an) * r2]); } edges.push(pts); }
-  for (let a = 0; a < arms; a++) {
-    ctx.beginPath(); ctx.moveTo(cx, cy);
-    edges[a].forEach(p => ctx.lineTo(p[0], p[1]));
-    ctx.arc(cx, cy, R, ang(a, 1), ang(a + 1, 1));
-    for (let s = N; s >= 0; s--) ctx.lineTo(edges[a + 1][s][0], edges[a + 1][s][1]);
-    ctx.closePath(); ctx.fillStyle = cols[a % cols.length]; ctx.fill();
-  }
-  // luntur pewarna di sepanjang lipatan
-  ctx.lineWidth = Math.max(1.2, R * .04); ctx.lineJoin = 'round';
-  for (let a = 0; a < arms; a++) {
-    ctx.beginPath(); edges[a].forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]));
-    ctx.strokeStyle = rgba(mix(cols[a % cols.length], cols[(a + arms - 1) % cols.length % cols.length], .5), .32); ctx.stroke();
-  }
-  ctx.strokeStyle = rgba(cols[0], .2); ctx.lineWidth = R * .08; ctx.beginPath(); ctx.arc(cx, cy, R * 1.05, 0, TAU); ctx.stroke();
-  ctx.strokeStyle = 'rgba(0,0,0,.07)'; ctx.lineWidth = Math.max(.8, R * .012);
-  for (let q = 0; q < arms * 2; q++) { const an = hash(salt, q, seed, 6) * TAU, r0 = R * (.15 + hash(salt, q, seed, 7) * .5); ctx.beginPath(); ctx.moveTo(cx + Math.cos(an) * r0, cy + Math.sin(an) * r0); ctx.lineTo(cx + Math.cos(an + twist * .4) * R * .98, cy + Math.sin(an + twist * .4) * R * .98); ctx.stroke(); }
-}
-function rings(ctx, cx, cy, R, n, cols, salt, seed, diamond) {
-  for (let q = n; q >= 1; q--) {
-    const base = R * q / n, p1 = hash(salt, q, seed, 1) * TAU, p2 = hash(salt, q, seed, 2) * TAU;
-    ctx.beginPath();
-    for (let a = 0; a <= 72; a++) {
-      const th = a / 72 * TAU, w = 1 + .05 * Math.sin(3 * th + p1) + .035 * Math.sin(5 * th + p2);
-      const rr = diamond ? base / (Math.abs(Math.cos(th)) + Math.abs(Math.sin(th))) * w : base * w;
-      const x = cx + Math.cos(th) * rr, y = cy + Math.sin(th) * rr; a ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
-    }
-    ctx.closePath(); ctx.fillStyle = cols[(n - q) % cols.length]; ctx.fill();
-    ctx.strokeStyle = rgba(cols[(n - q + 1) % cols.length], .28); ctx.lineWidth = Math.max(1, R * .03); ctx.stroke();
-  }
-}
-function drawTiedye(ctx, r, st, c) {
-  const [c1, c2, c3] = c, k = st.scale || 1, seed = st.seed | 0, gh = st.gh || 760;
-  const cols = [c2, c3, mix(c1, c2, .55), mix(c2, c3, .5)], cols2 = [c2, c1, c3, mix(c2, c3, .5)];
-  const spots = (cell, R, fn) => eachHex(r, cell, (i, j, x, y) => fn(x + (hash(i, j, seed, 1) - .5) * cell * .12, y + (hash(i, j, seed, 2) - .5) * cell * .12, i * 7919 + j, R * (.94 + hash(i, j, seed, 5) * .14)));
-  switch (st.style) {
-    case 'td_spiral': { const cell = 330 * k; spots(cell, cell * .62, (x, y, s, R) => spiral(ctx, x, y, R, 8, Math.PI * 1.25, cols, s, seed)); break; }
-    case 'td_swirl': { const cell = 330 * k; spots(cell, cell * .62, (x, y, s, R) => spiral(ctx, x, y, R, 12, Math.PI * 3.3, cols, s, seed)); break; }
-    case 'td_mini': { const cell = 150 * k; spots(cell, cell * .62, (x, y, s, R) => spiral(ctx, x, y, R, 6, Math.PI * 1.7, cols, s, seed)); break; }
-    case 'td_sunburst': { const cell = 250 * k; spots(cell, cell * .62, (x, y, s, R) => spiral(ctx, x, y, R, 20, Math.PI * .18, cols, s, seed)); break; }
-    case 'td_bullseye': { const cell = 330 * k; spots(cell, cell * .6, (x, y, s, R) => rings(ctx, x, y, R, 7, cols2, s, seed, false)); break; }
-    case 'td_diamond': { const cell = 330 * k; spots(cell, cell * .62, (x, y, s, R) => rings(ctx, x, y, R, 7, cols2, s, seed, true)); break; }
-    case 'td_pleat': {
-      const P = 58 * k, seg = 16 * k, pc = [c2, c3, mix(c2, c3, .5)];
-      for (let i = Math.floor(r.x0 / P) - 2; i < Math.ceil(r.x1 / P) + 2; i++) {
-        const col = pc[((i % 3) + 3) % 3], hw = P * (.46 + hash(i, 0, seed, 3) * .3), ph = hash(i, 1, seed, 4) * TAU, ph2 = hash(i, 2, seed, 5) * TAU, cx = (i + .5) * P;
-        for (let y = Math.floor(r.y0 / seg) * seg - seg; y < r.y1 + seg; y += seg) {
-          const o = 9 * k * Math.sin(y / (120 * k) * TAU / 2 + ph) + 5 * k * Math.sin(y / (47 * k) + ph2), g = ctx.createLinearGradient(cx - hw + o, 0, cx + hw + o, 0);
-          g.addColorStop(0, rgba(col, 0)); g.addColorStop(.32, rgba(col, .92)); g.addColorStop(.68, rgba(col, .92)); g.addColorStop(1, rgba(col, 0));
-          ctx.fillStyle = g; ctx.fillRect(cx - hw + o, y, hw * 2, seg + .8);
-        }
-      }
-      break;
-    }
-    case 'td_ombre': {
-      const g = ctx.createLinearGradient(0, -10, 0, gh + 10); g.addColorStop(0, c1); g.addColorStop(.5, c2); g.addColorStop(1, c3);
-      ctx.fillStyle = g; ctx.fillRect(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0);
-      ctx.lineWidth = 7 * k;
-      for (let q = 0; q < 6; q++) {
-        ctx.strokeStyle = q & 1 ? 'rgba(255,255,255,.12)' : 'rgba(0,0,0,.08)'; ctx.beginPath();
-        const y0 = gh * (.12 + q * .15), ph = hash(q, 0, seed, 2) * TAU;
-        for (let x = r.x0 - 10; x <= r.x1 + 10; x += 8) { const y = y0 + 14 * k * Math.sin(x / (110 * k) + ph) + 8 * k * Math.sin(x / (41 * k) + ph * 2); x === r.x0 - 10 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
-        ctx.stroke();
-      }
-      ctx.lineCap = 'round'; ctx.lineWidth = 5 * k;
-      eachCell(r, 48 * k, gh, (i, j) => { if (hash(i, 0, seed, 6) < .55) { const x = i * 48 * k + hash(i, 1, seed, 7) * 40 * k, y0 = gh * (.55 + hash(i, 2, seed, 8) * .2); ctx.strokeStyle = rgba(c3, .45); ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y0 + gh * (.15 + hash(i, 3, seed, 9) * .25)); ctx.stroke(); } });
-      ctx.lineCap = 'butt';
-      break;
-    }
-    case 'td_ice': {
-      const cell = 150 * k, layers = [[c2, .55, 80], [c3, .55, 70], [mix(c2, c3, .5), .4, 56]];
-      layers.forEach(([col, al, rs], L) => {
-        ctx.fillStyle = rgba(col, al);
-        eachCell(r, cell, cell, (i, j) => {
-          const n = 1 + Math.floor(hash(i, j, seed, 40 + L) * 1.9);
-          for (let q = 0; q < n; q++) blob(ctx, i * cell + hash(i, j, seed, 50 + q + L * 3) * cell, j * cell + hash(i, j, seed, 53 + q + L * 3) * cell, (.55 + hash(i, j, seed, 60 + q + L) * .7) * rs * k, i * 977 + j * 131 + q * 17 + L, seed, 9, .9);
-        });
-      });
-      const sp = 26 * k;
-      eachCell(r, sp, sp, (i, j) => { const h = hash(i, j, seed, 70); if (h < .42) { ctx.fillStyle = rgba(h < .2 ? c3 : c2, .5); ctx.beginPath(); ctx.arc(i * sp + hash(i, j, seed, 71) * sp, j * sp + hash(i, j, seed, 72) * sp, (1.2 + hash(i, j, seed, 73) * 3.2) * k, 0, TAU); ctx.fill(); } });
-      ctx.strokeStyle = 'rgba(0,0,0,.14)'; ctx.lineWidth = 1.4 * k; ctx.lineJoin = 'round';
-      eachCell(r, 120 * k, 120 * k, (i, j) => {
-        for (let q = 0; q < 2; q++) { let x = i * 120 * k + hash(i, j, seed, 80 + q) * 120 * k, y = j * 120 * k + hash(i, j, seed, 82 + q) * 120 * k, a = hash(i, j, seed, 84 + q) * TAU; ctx.beginPath(); ctx.moveTo(x, y); for (let s = 0; s < 5; s++) { a += (hash(i + s, j, seed, 86 + q) - .5) * 1.4; x += Math.cos(a) * 16 * k; y += Math.sin(a) * 16 * k; ctx.lineTo(x, y); } ctx.stroke(); }
-      });
-      break;
-    }
-    case 'td_marble': {
-      const bh = 70 * k, A = bh * 1.1, f1 = TAU / (270 * k), f2 = TAU / (127 * k), pc = [c2, c3, mix(c2, c1, .5), mix(c2, c3, .5)];
-      const cur = (j, x) => j * bh + A * Math.sin(x * f1 + hash(j, 1, seed, 3) * TAU) + A * .55 * Math.sin(x * f2 + hash(j, 2, seed, 4) * TAU);
-      for (let j = Math.floor(r.y0 / bh) - 4; j < Math.ceil(r.y1 / bh) + 4; j++) {
-        ctx.beginPath(); const xs = r.x0 - 12;
-        for (let x = xs; x <= r.x1 + 12; x += 9) x === xs ? ctx.moveTo(x, cur(j, x)) : ctx.lineTo(x, cur(j, x));
-        ctx.lineTo(r.x1 + 12, r.y1 + bh * 8); ctx.lineTo(xs, r.y1 + bh * 8); ctx.closePath();
-        ctx.fillStyle = pc[((j % 4) + 4) % 4]; ctx.fill();
-        ctx.strokeStyle = 'rgba(255,255,255,.2)'; ctx.lineWidth = 1.6 * k;
-        ctx.beginPath(); for (let x = xs; x <= r.x1 + 12; x += 9) x === xs ? ctx.moveTo(x, cur(j, x)) : ctx.lineTo(x, cur(j, x)); ctx.stroke();
-      }
       break;
     }
     default: return false;
@@ -455,7 +343,7 @@ function drawFauna(ctx, r, st, c) {
 export function drawMotif(ctx, r, st) {
   const id = st.style || '';
   if (id.startsWith('st_')) return drawStripe(ctx, r, st, st.colors);
-  if (id.startsWith('td_')) return drawTiedye(ctx, r, st, st.colors);
+  if (id.startsWith('td_')) return drawDye(ctx, r, st);
   if (id.startsWith('fa_')) return drawFauna(ctx, r, st, st.colors);
   return false;
 }
