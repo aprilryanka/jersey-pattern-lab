@@ -34,8 +34,15 @@ export function renderFaunaTile(ctx, N, st) {
         col = lerpc(c1, c2, sm(-.14, .14, val)); break;
       }
       case 'fx_flow': {
-        const w1 = fbm(u * 3, v * 3, 3, 3, 5, seed) - .5, w2 = fbm(u * 9, v * 9, 9, 9, 4, seed + 4) - .5;
-        const val = Math.sin(TAU * (12 * (u + v * 2) + 6 * w1)) + 3.4 * w2 + .25;
+        // pusaran: koordinat diputar di sekitar dua pusat (periodik), lalu garis + bercak noise
+        let uu = u, vv = v;
+        for (const [cx, cy, sg] of [[.28, .3, 1], [.74, .72, -1]]) {
+          let du = u - cx, dv = v - cy; du -= Math.round(du); dv -= Math.round(dv);
+          const th = sg * 3.4 * Math.exp(-(du * du + dv * dv) / .035), c = Math.cos(th), sn = Math.sin(th);
+          uu += du * (c - 1) - dv * sn; vv += du * sn + dv * (c - 1);
+        }
+        const w1 = fbm(u * 3, v * 3, 3, 3, 5, seed) - .5, w2 = fbm(u * 15, v * 15, 15, 15, 4, seed + 4) - .5;
+        const val = Math.sin(TAU * (15 * (uu + vv * 2) + 3 * w1)) + 2.7 * w2 + .3;
         col = lerpc(c1, c2, sm(-.1, .1, val)); break;
       }
       case 'fx_fur': {
@@ -56,12 +63,12 @@ export function renderFaunaTile(ctx, N, st) {
         col = lerpc(lerpc(c2, c3, m), c1, t); break;
       }
       case 'fx_snake': {
-        const S = 9 * sc * (N / 330), rh = S * .78, j = Math.floor(y / rh), xo = x - ((j & 1) ? S / 2 : 0), i = Math.floor(xo / S);
+        const S = 6.5 * sc * (N / 330), rh = S * .78, j = Math.floor(y / rh), xo = x - ((j & 1) ? S / 2 : 0), i = Math.floor(xo / S);
         const cx = (i + .5) * S + ((j & 1) ? S / 2 : 0), cy = (j + .5) * rh, dx = (xo - (i + .5) * S) / (S * .47), dy = (y - cy) / (rh * .56);
-        const inside = Math.pow(Math.abs(dx), 3.4) + Math.pow(Math.abs(dy), 3.4) < 1;
+        const inside = Math.pow(Math.abs(dx), 2.8) + Math.pow(Math.abs(dy), 2.8) < 1;
         const uu = cx / N, vv = cy / N, fu = Math.abs((uu * 2) % 1 - .5) * 2, fv = Math.abs((vv * 3) % 1 - .5) * 2;
-        const dd = fu + fv + (fbm(uu * 8, vv * 8, 8, 8, 3, seed) - .5) * .5 + (H(i, j, seed, 5) - .5) * .12;
-        let tone = Math.abs(dd - 1) < .15 ? 2 : (dd < 1 ? 0 : 1);
+        const dd = fu + fv + (fbm(uu * 10, vv * 10, 10, 10, 4, seed) - .5) * .85 + (H(i, j, seed, 5) - .5) * .22;
+        let tone = Math.abs(dd - 1) < .16 ? 2 : (dd < .62 ? 0 : dd < 1 ? (H(i, j, seed, 8) < .35 ? 0 : 1) : (H(i, j, seed, 8) < .12 ? 2 : 1));
         if (Math.abs(((uu * 2) % 1) - .5) < .03 && Math.abs(dd - 1) > .2) tone = 2;
         const base = tone === 2 ? c3 : tone === 1 ? c2 : c1, shade = .92 + H(i, j, seed, 9) * .16;
         col = inside ? [base[0] * shade, base[1] * shade, base[2] * shade] : lerpc(c1, [255, 255, 255], .35); break;
@@ -72,17 +79,18 @@ export function renderFaunaTile(ctx, N, st) {
   ctx.putImageData(img, 0, 0);
 }
 function snowLeo(ctx, N, st) {
-  const [c1, c2, c3] = st.colors, seed = st.seed | 0, s = 30 * (N / 330) * (st.scale || 1), rh = s * .86;
+  const [c1, c2, c3] = st.colors, seed = st.seed | 0, s = 28 * (N / 330) * (st.scale || 1), rh = s * .82;
   ctx.fillStyle = c1; ctx.fillRect(0, 0, N, N);
   const el = (x, y, rx, ry, a) => { ctx.beginPath(); ctx.ellipse(x, y, rx, ry, a, 0, TAU); ctx.fill(); };
+  const bean = (x, y, a, rx, ry) => { ctx.fillStyle = c2; el(x, y, rx, ry, a); ctx.fillStyle = c3; el(x, y, rx * .66, ry * .5, a); };
   for (let j = -1; j * rh < N + rh; j++) for (let i = -1; i * s < N + s; i++) {
-    const cx = (i + (j & 1 ? .5 : 0) + (H(i, j, seed, 1) - .5) * .3) * s, cy = j * rh + (H(i, j, seed, 2) - .5) * s * .2, R = s * (.3 + H(i, j, seed, 3) * .06);
-    const m = 3 + Math.floor(H(i, j, seed, 4) * 4), a0 = H(i, j, seed, 5) * TAU, span = 3.6 + H(i, j, seed, 6) * 1.6;
+    const cx = (i + (j & 1 ? .5 : 0) + (H(i, j, seed, 1) - .5) * .5) * s, cy = j * rh + (H(i, j, seed, 2) - .5) * s * .4, R = s * (.36 + H(i, j, seed, 3) * .1);
+    const m = 3 + Math.floor(H(i, j, seed, 4) * 3), a0 = H(i, j, seed, 5) * TAU, span = 3.8 + H(i, j, seed, 6) * 1.4;
     for (let n = 0; n < m; n++) {
-      const a = a0 + n / m * span + (H(i, j, seed, 10 + n) - .5) * .5, bx = cx + Math.cos(a) * R, by = cy + Math.sin(a) * R, rx = s * (.17 + H(i, j, seed, 20 + n) * .05), ry = rx * (.62 + H(i, j, seed, 60 + n) * .35);
-      ctx.fillStyle = c2; el(bx, by, rx, ry, a + 1.57); ctx.fillStyle = c3; el(bx - Math.cos(a) * ry * .25, by - Math.sin(a) * ry * .25, rx * .66, ry * .6, a + 1.57);
+      const a = a0 + n / m * span + (H(i, j, seed, 10 + n) - .5) * .4, bx = cx + Math.cos(a) * R, by = cy + Math.sin(a) * R;
+      bean(bx, by, a + 1.57, s * (.2 + H(i, j, seed, 20 + n) * .06), s * (.125 + H(i, j, seed, 60 + n) * .04));
     }
-    ctx.fillStyle = c2; for (let n = 0; n < 3; n++) el(cx + (H(i, j, seed, 40 + n) - .5) * s, cy + (H(i, j, seed, 43 + n) - .5) * rh, s * .06, s * .045, H(i, j, seed, 46) * 3);
+    if (H(i, j, seed, 70) < .35) bean(cx + (H(i, j, seed, 71) - .5) * s, cy + (H(i, j, seed, 72) - .5) * rh, H(i, j, seed, 73) * 3, s * .17, s * .11);
   }
 }
 
