@@ -1,6 +1,7 @@
 import { DYE_STYLES, drawDye } from './dye.js';
 import { STRIPEX_STYLES, STRIPEX_PALETTES, drawStripeX } from './stripex.js';
 import { FAUNAX_STYLES, FAUNAX_PALETTES, drawFaunaX } from './faunax.js';
+import { ACID_STYLES, ACID_PALETTES, ACID_STYLE_PALETTE, drawAcid } from './acid.js';
 import { VINTAGE_STYLES, VINTAGE_PALETTES, VINTAGE_STYLE_PALETTE, VINTAGE_THUMB, drawVintage } from './vintage.js';
 
 // Motif kategori Tie-dye (dye.js), Strip, dan Fauna. Digambar di "ruang garmen" (mm, y ke bawah), sama seperti Basic.
@@ -8,6 +9,7 @@ import { VINTAGE_STYLES, VINTAGE_PALETTES, VINTAGE_STYLE_PALETTE, VINTAGE_THUMB,
 // Warna: c1 = dasar, c2 = warna utama motif, c3 = aksen.
 
 export const TIEDYE_STYLES = DYE_STYLES;
+export const ACID = { styles: ACID_STYLES, palettes: ACID_PALETTES };
 export const VINTAGE = { styles: VINTAGE_STYLES, palettes: VINTAGE_PALETTES };
 export const STRIPE_STYLES = [
   ['st_classic', 'Klasik'], ['st_pin', 'Pinstripe'], ['st_chalk', 'Chalk'], ['st_double', 'Ganda'],
@@ -46,12 +48,14 @@ export const FAUNA_PALETTES = [
 export const STYLE_PALETTE = {
   ...Object.fromEntries(Object.entries(VINTAGE_STYLE_PALETTE)),
   ...Object.fromEntries(Object.entries({ sx_bold: 0, sx_rhythm: 2, sx_multi: 5, sx_pin_gold: 1, sx_fade: 4, sx_rainbow: 5, sx_blur: 3, sx_zig_in: 3, sx_line_in: 0, sx_pixel: 0, sx_bolt: 2, sx_ibiza: 7 }).map(([k, v]) => [k, v + 12])),
+  ...ACID_STYLE_PALETTE,
   fx_zebra: 12, fx_flow: 13, fx_fur: 14, fx_brush: 15, fx_snake: 16, fx_snowleo: 17,
   fa_zebra: 0, fa_tiger: 1, fa_leopard: 2, fa_jaguar: 2, fa_cheetah: 2, fa_giraffe: 5, fa_cow: 4, fa_dalmatian: 7, fa_snake: 6, fa_scales: 9, fa_peacock: 10,
 };
 
 // Motif berukuran besar perlu area thumbnail lebih luas supaya terlihat utuh.
 export const THUMB_SCALE = {
+  ac_liquid: 1.3, ac_thermal: 1.3, ac_iris: 1.3, ac_blob: 1.3, ac_forest: 1.3, ac_tiger: 1.3,
   fx_zebra: 1.6, fx_flow: 1.6, fx_fur: 1.5, fx_brush: 1.5, fx_snake: 1.6, fx_snowleo: 1.8,
   ...VINTAGE_THUMB, sx_bold: 1.6, sx_rhythm: 1.8, sx_multi: 1.3, sx_pin_gold: 1.2, sx_fade: 2, sx_rainbow: 1.6, sx_blur: 1.6, sx_zig_in: 1.7, sx_line_in: 1.6, sx_pixel: 2, sx_bolt: 1.6, sx_ibiza: 1.5,
   td_spiral: 3.3, td_swirl: 3.3, td_burst: 3, td_mini: 1.8, td_ombre: 3.8, td_crush: 2.7, td_cloud: 3.8,
@@ -361,5 +365,6 @@ export function drawMotif(ctx, r, st) {
   if (id.startsWith('td_')) return drawDye(ctx, r, st);
   if (id.startsWith('fa_')) return drawFauna(ctx, r, st, st.colors);
   if (id.startsWith('fx_')) return drawFaunaX(ctx, r, st);
+  if (id.startsWith('ac_')) return drawAcid(ctx, r, st);
   return false;
 }

@@ -1,6 +1,6 @@
 # Jersey Pattern Lab v2
 
-SaaS desain jersey: generator pattern (Basic, Advanced, Tie-dye, Strip, Vintage, Fauna), pratinjau 3D, dan export pola jahit.
+SaaS desain jersey: generator pattern (Basic, Advanced, Tie-dye, Strip, Vintage, Acid, Fauna), pratinjau 3D, dan export pola jahit.
 Stack: Vite (vanilla JS, multi-halaman) + Three.js + Supabase (auth, database, storage).
 
 ## Halaman
@@ -63,6 +63,6 @@ dari posisi 3D (depan/belakang/lengan/rib); bisa dikoreksi sebelum disimpan.
 ## Kategori pattern (Studio)
 
 Basic, Tie-dye, Strip, dan Fauna memakai satu mesin gambar (`drawBasic` di `src/studio/basic.js`); Advanced punya generator noise sendiri.
-Daftar kategori, motif, dan palet ada di `CATEGORIES` (`basic.js`). Motif Strip (29, termasuk `stripex.js`), Vintage (13, `vintage.js`), dan Fauna (17, 6 di antaranya tekstur per-piksel di `faunax.js`) ada di `src/studio/motifs.js`; Tie-dye (7) ada di `src/studio/dye.js` (field pewarna per piksel,
+Daftar kategori, motif, dan palet ada di `CATEGORIES` (`basic.js`). Motif Strip (29, termasuk `stripex.js`), Vintage (13, `vintage.js`), Acid (6, `acid.js`, gradient cair bergrain), dan Fauna (17, 6 di antaranya tekstur per-piksel di `faunax.js`) ada di `src/studio/motifs.js`; Tie-dye (7) ada di `src/studio/dye.js` (field pewarna per piksel,
 di-cache sebagai tile seamless 640 px; ganti warna tidak menghitung ulang). Menambah motif: tambahkan `[id, label]` di daftar style, palet di daftar palet, lalu satu `case` di fungsi gambar kategorinya
 (id berawalan `td_`, `st_`, `fa_`). Tambahkan terjemahan EN label baru di `src/lib/i18n.js`.

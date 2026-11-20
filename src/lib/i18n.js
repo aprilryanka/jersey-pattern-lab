@@ -228,9 +228,16 @@ const EN = {
   'Kuas Kering': 'Dry brush',
   'Kulit Ular': 'Snake skin',
   'Macan Salju': 'Snow leopard',
+  'Cair': 'Liquid',
+  'Termal': 'Thermal',
+  'Iridescent': 'Iridescent',
+  'Blob Biru-Oranye': 'Blue-orange blob',
+  'Hutan Neon': 'Neon forest',
+  'Harimau Acid': 'Acid tiger',
+  'Acid': 'Acid',
   'Tie-dye': 'Tie-dye', 'Strip': 'Stripes', 'Fauna': 'Animal prints', 'Pilih kategori pattern': 'Choose a pattern category',
-  'Basic berisi motif cepat, Tie-dye berisi 7 gaya celup realistis, Strip berisi 29 jenis strip jersey (jumlah, lebar, gradient, dan pola di dalam strip), Vintage berisi 13 pola jersey retro 80-90an, dan Fauna berisi 17 motif hewan (zebra, harimau, macan tutul, ular, dan tekstur bulu realistis). Advanced memakai generator Jersey Pattern Lab lengkap: gaya noise, palet, finishing, efek glass, dan foto sebagai sumber pattern.':
-    'Basic has quick motifs, Tie-dye has 7 realistic dye styles, Stripes has 29 jersey stripe types (count, width, gradients and inner patterns), Vintage has 13 retro 80s-90s jersey patterns, and Fauna has 17 animal prints (zebra, tiger, leopard, snake and realistic fur textures). Advanced uses the full Jersey Pattern Lab generator: noise styles, palettes, finishing, glass effects and photos as a pattern source.',
+  'Basic berisi motif cepat, Tie-dye berisi 7 gaya celup realistis, Strip berisi 29 jenis strip jersey (jumlah, lebar, gradient, dan pola di dalam strip), Vintage berisi 13 pola jersey retro 80-90an, Acid berisi 6 gradient cair psychedelic bergrain, dan Fauna berisi 17 motif hewan (zebra, harimau, macan tutul, ular, dan tekstur bulu realistis). Advanced memakai generator Jersey Pattern Lab lengkap: gaya noise, palet, finishing, efek glass, dan foto sebagai sumber pattern.':
+    'Basic has quick motifs, Tie-dye has 7 realistic dye styles, Stripes has 29 jersey stripe types (count, width, gradients and inner patterns), Vintage has 13 retro 80s-90s jersey patterns, Acid has 6 grainy psychedelic liquid gradients, and Fauna has 17 animal prints (zebra, tiger, leopard, snake and realistic fur textures). Advanced uses the full Jersey Pattern Lab generator: noise styles, palettes, finishing, glass effects and photos as a pattern source.',
   'Pusaran': 'Swirl', 'Burst': 'Burst', 'Crush': 'Crush', 'Awan': 'Cloud', 'Mini spiral': 'Mini spiral', 'Lipat': 'Pleated', 'Lava': 'Lava', 'Ice dye': 'Ice dye',
   'Klasik': 'Classic', 'Ganda': 'Double', 'Lebar-tipis': 'Wide-thin', 'Tiga': 'Triple', 'Selempang': 'Sash', 'Pudar': 'Fade', 'Menebal': 'Growing',
   'Bergelombang': 'Wavy', 'Putus-putus': 'Dashed', 'Patah': 'Broken',

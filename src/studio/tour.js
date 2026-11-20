@@ -2,7 +2,7 @@
 import { E } from '../lib/ui.js';
 
 export const STUDIO_TOUR = [
-  ['mode', 'Pilih kategori pattern', 'Basic berisi motif cepat, Tie-dye berisi 7 gaya celup realistis, Strip berisi 29 jenis strip jersey (jumlah, lebar, gradient, dan pola di dalam strip), Vintage berisi 13 pola jersey retro 80-90an, dan Fauna berisi 17 motif hewan (zebra, harimau, macan tutul, ular, dan tekstur bulu realistis). Advanced memakai generator Jersey Pattern Lab lengkap: gaya noise, palet, finishing, efek glass, dan foto sebagai sumber pattern.'],
+  ['mode', 'Pilih kategori pattern', 'Basic berisi motif cepat, Tie-dye berisi 7 gaya celup realistis, Strip berisi 29 jenis strip jersey (jumlah, lebar, gradient, dan pola di dalam strip), Vintage berisi 13 pola jersey retro 80-90an, Acid berisi 6 gradient cair psychedelic bergrain, dan Fauna berisi 17 motif hewan (zebra, harimau, macan tutul, ular, dan tekstur bulu realistis). Advanced memakai generator Jersey Pattern Lab lengkap: gaya noise, palet, finishing, efek glass, dan foto sebagai sumber pattern.'],
   ['motif', 'Pilih dan acak motif', 'Klik motif untuk memakainya. Tombol Acak semua mengganti motif, warna, dan bentuk sekaligus.'],
   ['tab-edit', 'Edit pattern', 'Atur skala, rotasi, posisi, dan cermin pattern di seluruh jersey. Kamu juga bisa membuat panel tertentu (misalnya lengan atau rib) berwarna polos.'],
   ['tab-elements', 'Teks, logo, sponsor', 'Tambah nama, nomor, logo tim, dan sponsor. Upload PNG transparan untuk hasil terbaik.'],

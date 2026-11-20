@@ -3,7 +3,7 @@
 // Kategori Tie-dye, Strip, dan Fauna ada di motifs.js dan memakai fungsi gambar yang sama (drawBasic).
 
 import {
-  TIEDYE_STYLES, STRIPE_STYLES, FAUNA_STYLES, TIEDYE_PALETTES, STRIPE_PALETTES, FAUNA_PALETTES, THUMB_SCALE, drawMotif, VINTAGE,
+  TIEDYE_STYLES, STRIPE_STYLES, FAUNA_STYLES, TIEDYE_PALETTES, STRIPE_PALETTES, FAUNA_PALETTES, THUMB_SCALE, drawMotif, VINTAGE, ACID,
 } from './motifs.js';
 
 export const BASIC_STYLES = [
@@ -24,6 +24,7 @@ export const CATEGORIES = [
   { id: 'tiedye', label: 'Tie-dye', styles: TIEDYE_STYLES, palettes: TIEDYE_PALETTES },
   { id: 'stripes', label: 'Strip', styles: STRIPE_STYLES, palettes: STRIPE_PALETTES },
   { id: 'vintage', label: 'Vintage', styles: VINTAGE.styles, palettes: VINTAGE.palettes },
+  { id: 'acid', label: 'Acid', styles: ACID.styles, palettes: ACID.palettes },
   { id: 'fauna', label: 'Fauna', styles: FAUNA_STYLES, palettes: FAUNA_PALETTES },
 ];
 export const ALL_STYLES = CATEGORIES.flatMap(c => c.styles);
