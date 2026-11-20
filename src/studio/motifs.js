@@ -1,5 +1,6 @@
 import { DYE_STYLES, drawDye } from './dye.js';
 import { STRIPEX_STYLES, STRIPEX_PALETTES, drawStripeX } from './stripex.js';
+import { FAUNAX_STYLES, FAUNAX_PALETTES, drawFaunaX } from './faunax.js';
 import { VINTAGE_STYLES, VINTAGE_PALETTES, VINTAGE_STYLE_PALETTE, VINTAGE_THUMB, drawVintage } from './vintage.js';
 
 // Motif kategori Tie-dye (dye.js), Strip, dan Fauna. Digambar di "ruang garmen" (mm, y ke bawah), sama seperti Basic.
@@ -20,6 +21,7 @@ export const FAUNA_STYLES = [
   ['fa_zebra', 'Zebra'], ['fa_tiger', 'Harimau'], ['fa_leopard', 'Macan tutul'], ['fa_jaguar', 'Jaguar'],
   ['fa_cheetah', 'Cheetah'], ['fa_giraffe', 'Jerapah'], ['fa_cow', 'Sapi'], ['fa_dalmatian', 'Dalmatian'],
   ['fa_snake', 'Ular'], ['fa_scales', 'Sisik ikan'], ['fa_peacock', 'Merak'],
+  ...FAUNAX_STYLES,
 ];
 
 export const TIEDYE_PALETTES = [ // c1 = bagian terang/resist, c2 = warna tengah, c3 = celupan paling pekat
@@ -37,17 +39,20 @@ export const FAUNA_PALETTES = [
   ['#f5f5f0', '#101010', '#9a9a9a'], ['#f08a24', '#1a1208', '#f6e6c8'], ['#d9a441', '#2a1a0c', '#a8742a'], ['#e6e3dc', '#3a3a3a', '#a9a59c'],
   ['#ffffff', '#111111', '#8a8a8a'], ['#e8cf9a', '#7a4a1e', '#4a2c10'], ['#8a7a3a', '#3b2f12', '#d8c88a'], ['#ffffff', '#141414', '#6b4a2a'],
   ['#2f6b3a', '#0f2a14', '#b8d98a'], ['#0a6ea8', '#06314f', '#7fd3f5'], ['#0a7a6a', '#0b2a6b', '#e0b030'], ['#c8302a', '#1a0a08', '#f6c8a0'],
+  ...FAUNAX_PALETTES,
 ];
 
 // Palet alami per motif fauna: dipakai otomatis saat motif dipilih (selama warna belum diubah manual).
 export const STYLE_PALETTE = {
   ...Object.fromEntries(Object.entries(VINTAGE_STYLE_PALETTE)),
   ...Object.fromEntries(Object.entries({ sx_bold: 0, sx_rhythm: 2, sx_multi: 5, sx_pin_gold: 1, sx_fade: 4, sx_rainbow: 5, sx_blur: 3, sx_zig_in: 3, sx_line_in: 0, sx_pixel: 0, sx_bolt: 2, sx_ibiza: 7 }).map(([k, v]) => [k, v + 12])),
+  fx_zebra: 12, fx_flow: 13, fx_fur: 14, fx_brush: 15, fx_snake: 16, fx_snowleo: 17,
   fa_zebra: 0, fa_tiger: 1, fa_leopard: 2, fa_jaguar: 2, fa_cheetah: 2, fa_giraffe: 5, fa_cow: 4, fa_dalmatian: 7, fa_snake: 6, fa_scales: 9, fa_peacock: 10,
 };
 
 // Motif berukuran besar perlu area thumbnail lebih luas supaya terlihat utuh.
 export const THUMB_SCALE = {
+  fx_zebra: 1.6, fx_flow: 1.6, fx_fur: 1.5, fx_brush: 1.5, fx_snake: 1.6, fx_snowleo: 1.8,
   ...VINTAGE_THUMB, sx_bold: 1.6, sx_rhythm: 1.8, sx_multi: 1.3, sx_pin_gold: 1.2, sx_fade: 2, sx_rainbow: 1.6, sx_blur: 1.6, sx_zig_in: 1.7, sx_line_in: 1.6, sx_pixel: 2, sx_bolt: 1.6, sx_ibiza: 1.5,
   td_spiral: 3.3, td_swirl: 3.3, td_burst: 3, td_mini: 1.8, td_ombre: 3.8, td_crush: 2.7, td_cloud: 3.8,
   st_sash: 3, st_racing: 1.6, st_grow: 2, st_triple: 1.4, st_barcode: 1.4, st_broken: 1.2,
@@ -355,5 +360,6 @@ export function drawMotif(ctx, r, st) {
   if (id.startsWith('vt_')) return drawVintage(ctx, r, st);
   if (id.startsWith('td_')) return drawDye(ctx, r, st);
   if (id.startsWith('fa_')) return drawFauna(ctx, r, st, st.colors);
+  if (id.startsWith('fx_')) return drawFaunaX(ctx, r, st);
   return false;
 }
