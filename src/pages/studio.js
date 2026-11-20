@@ -7,7 +7,8 @@ import { mountNav } from '../lib/nav.js';
 import { t, panelLabel, locale } from '../lib/i18n.js';
 import { $, $$, E, toast, modal, download, withProgress, shrinkImage, waLink } from '../lib/ui.js';
 import { DEMO } from '../lib/demo.js';
-import { BASIC_STYLES, BASIC_PALETTES, drawBasicThumb, drawBasic } from '../studio/basic.js';
+import { STYLE_PALETTE } from '../studio/motifs.js';
+import { BASIC_PALETTES, CATEGORIES, catOfStyle, drawBasicThumb, drawBasic } from '../studio/basic.js';
 import { initAdvanced } from '../studio/advanced.js';
 import { layoutModel, renderAtlas, renderLayers, FONTS, setImageReadyHandler } from '../studio/atlas.js';
 import { Viewer3D } from '../studio/viewer3d.js';
@@ -25,7 +26,7 @@ const DEFAULT_MODEL = { id: null, name: 'Jersey Basic V-Neck', slug: 'jersey-bas
 
 /* ---------------- state ---------------- */
 const S = {
-  mode: 'basic',
+  mode: 'basic', cat: 'basic', catMem: {},
   basic: { style: 'chevron', colors: [...BASIC_PALETTES[0]], seed: 11, scale: 1 },
   edit: { scale: 1, rot: 0, offX: 0, offY: 0, flip: false, seam: true, repeats: 2 },
   panelFill: {}, ribColor: '#f2b705',
@@ -196,12 +197,27 @@ $('#grab').onclick = e => { const on = e.currentTarget.getAttribute('aria-presse
 $('#spin').onclick = e => { viewer.controls.autoRotate = !viewer.controls.autoRotate; e.currentTarget.setAttribute('aria-pressed', String(viewer.controls.autoRotate)); };
 $('#modelSel').onchange = e => useModel(models[+e.target.value]);
 
-/* ---------------- mode Basic / Advanced ---------------- */
+/* ---------------- kategori generator: Basic, Advanced, Tie-dye, Strip, Fauna ---------------- */
+// S.mode = 'basic' (semua kategori berbasis motif) atau 'advanced'. S.cat = kategori motif yang aktif.
+const catDef = id => CATEGORIES.find(c => c.id === id) || CATEGORIES[0];
+function setCatRaw(cat) { // ganti kategori tanpa menyimpan/memuat memori (dipakai saat memuat project)
+  S.cat = catDef(cat).id; renderStyles(); renderPalettes();
+}
+function switchCat(cat) {
+  if (cat === S.cat) return;
+  S.catMem[S.cat] = { style: S.basic.style, colors: [...S.basic.colors], scale: S.basic.scale };
+  const def = catDef(cat), m = S.catMem[def.id] || { style: def.styles.find(s => s[0] !== 'solid')[0], colors: [...def.palettes[0]], scale: 1 };
+  S.basic.style = m.style; S.basic.colors = [...m.colors]; S.basic.scale = m.scale;
+  setCatRaw(def.id); contrastText(); syncBasic();
+}
 function setMode(mode) {
-  $$('[data-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
-  $('#basicPanel').hidden = mode !== 'basic'; $('#advPanel').hidden = mode !== 'advanced';
-  if (mode === 'advanced') ensureAdv(); // Advanced gratis untuk semua; hanya fitur upload gambar yang khusus Pro
-  S.mode = mode; $('#repWrap').hidden = mode !== 'advanced';
+  const adv = mode === 'advanced';
+  if (!adv) switchCat(mode);
+  S.mode = adv ? 'advanced' : 'basic';
+  $$('[data-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === (adv ? 'advanced' : S.cat))));
+  $('#basicPanel').hidden = adv; $('#advPanel').hidden = !adv;
+  if (adv) ensureAdv(); // Advanced gratis untuk semua; hanya fitur upload gambar yang khusus Pro
+  $('#repWrap').hidden = !adv;
   invalidateBase();
 }
 $$('[data-mode]').forEach(b => b.onclick = () => setMode(b.dataset.mode));
@@ -223,16 +239,28 @@ function ensureAdv() {
 
 /* ---------------- Basic UI ---------------- */
 const styleBox = $('#styles');
-for (const [id, label] of BASIC_STYLES) {
-  const b = E('button', { type: 'button', 'data-style': id, 'aria-pressed': 'false' }, E('canvas', { width: 72, height: 72 }), label);
-  b.onclick = () => { S.basic.style = id; syncBasic(); invalidateBase(); };
-  styleBox.append(b);
+function renderStyles() {
+  styleBox.innerHTML = '';
+  for (const [id, label] of catDef(S.cat).styles) {
+    const b = E('button', { type: 'button', 'data-style': id, 'aria-pressed': 'false' }, E('canvas', { width: 72, height: 72 }), label);
+    b.onclick = () => {
+      S.basic.style = id;
+      const pl = catDef(S.cat).palettes, pi = STYLE_PALETTE[id];
+      if (pi != null && pl.some(p => p.every((c, i) => c === S.basic.colors[i]))) { S.basic.colors = [...pl[pi]]; contrastText(); } // warna belum diubah manual
+      syncBasic(); invalidateBase();
+    };
+    styleBox.append(b);
+  }
 }
-BASIC_PALETTES.forEach(p => {
-  const b = E('button', { type: 'button', title: p.join(' '), 'aria-label': 'Palet ' + p.join(' '), style: { background: `linear-gradient(90deg,${p[0]} 50%,${p[1]} 50% 82%,${p[2]} 82%)` } });
-  b.onclick = () => { S.basic.colors = [...p]; contrastText(); syncBasic(); invalidateBase(); };
-  $('#palettes').append(b);
-});
+function renderPalettes() {
+  $('#palettes').innerHTML = '';
+  catDef(S.cat).palettes.forEach(p => {
+    const b = E('button', { type: 'button', title: p.join(' '), 'aria-label': 'Palet ' + p.join(' '), style: { background: `linear-gradient(90deg,${p[0]} 50%,${p[1]} 50% 82%,${p[2]} 82%)` } });
+    b.onclick = () => { S.basic.colors = [...p]; contrastText(); syncBasic(); invalidateBase(); };
+    $('#palettes').append(b);
+  });
+}
+renderStyles(); renderPalettes();
 function drawThumbs() { $$('#styles button').forEach(b => drawBasicThumb(b.querySelector('canvas'), { ...S.basic, style: b.dataset.style })); }
 function syncBasic() {
   $$('#styles button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.style === S.basic.style)));
@@ -242,11 +270,11 @@ function syncBasic() {
 }
 for (let i = 0; i < 3; i++) $('#col' + i).oninput = e => { S.basic.colors[i] = e.target.value; drawThumbs(); invalidateBase(); };
 $('#bScale').oninput = e => { S.basic.scale = +e.target.value; $('#vScale').textContent = '×' + fmt(S.basic.scale, 2); drawThumbs(); invalidateBase(); };
-function rollColors() { const p = BASIC_PALETTES[Math.random() * BASIC_PALETTES.length | 0]; S.basic.colors = Math.random() < .5 ? [...p] : [...p].sort(() => Math.random() - .5); }
+function rollColors() { const pl = catDef(S.cat).palettes, p = pl[Math.random() * pl.length | 0]; S.basic.colors = Math.random() < .5 ? [...p] : [...p].sort(() => Math.random() - .5); }
 $('#rollCol').onclick = () => { rollColors(); contrastText(); syncBasic(); invalidateBase(); invalidateLayers(); };
 $('#rollSeed').onclick = () => { S.basic.seed = Math.random() * 99999 | 0; invalidateBase(); };
 $('#rollAll').onclick = () => {
-  const ch = BASIC_STYLES.map(s => s[0]).filter(s => s !== 'solid');
+  const ch = catDef(S.cat).styles.map(s => s[0]).filter(s => s !== 'solid');
   S.basic.style = ch[Math.random() * ch.length | 0]; S.basic.seed = Math.random() * 99999 | 0; S.basic.scale = +(.6 + Math.random() * 1.3).toFixed(2);
   S.edit.rot = [0, 0, 0, 15, 30, 45, 60, 90][Math.random() * 8 | 0];
   rollColors(); S.ribColor = S.basic.colors[1 + (Math.random() * 2 | 0)]; contrastText();
@@ -279,8 +307,8 @@ function fillMore(p, f, commit, rebuild) {
   if (f.mode === 'solid') out.push(E('label', {}, 'Warna', E('input', { type: 'color', value: f.color, 'aria-label': 'Warna ' + p.label, on: { input: e => { f.color = e.target.value; commit(); } } })));
   if (f.mode === 'own') {
     out.push(E('div', { className: 'row' },
-      E('select', { 'aria-label': 'Motif ' + p.label, on: { change: e => { f.style = e.target.value; commit(); } } }, BASIC_STYLES.map(([id, nm]) => E('option', { value: id, text: nm, selected: f.style === id }))),
-      E('button', { className: 'btn sm', type: 'button', text: 'Acak', title: 'Acak motif, warna, dan seed untuk panel ini', on: { click: () => { f.style = rnd(BASIC_STYLES.filter(s => s[0] !== 'solid'))[0]; f.colors = [...rnd(BASIC_PALETTES)]; f.seed = Math.random() * 99999 | 0; commit(); rebuild(); } } }),
+      E('select', { 'aria-label': 'Motif ' + p.label, on: { change: e => { f.style = e.target.value; commit(); } } }, CATEGORIES.map(c => E('optgroup', { label: c.label }, c.styles.map(([id, nm]) => E('option', { value: id, text: nm, selected: f.style === id }))))),
+      E('button', { className: 'btn sm', type: 'button', text: 'Acak', title: 'Acak motif, warna, dan seed untuk panel ini', on: { click: () => { const cd = rnd(CATEGORIES); f.style = rnd(cd.styles.filter(s => s[0] !== 'solid'))[0]; f.colors = [...rnd(cd.palettes)]; f.seed = Math.random() * 99999 | 0; commit(); rebuild(); } } }),
       E('button', { className: 'btn sm', type: 'button', text: 'Seed baru', on: { click: () => { f.seed = Math.random() * 99999 | 0; commit(); } } })));
     out.push(E('div', { className: 'pf-cols' }, f.colors.map((c, i) => E('input', { type: 'color', value: c, 'aria-label': `Warna ${i + 1} ${p.label}`, on: { input: e => { f.colors[i] = e.target.value; commit(); } } }))));
     out.push(rng('Skala', 'scale', .4, 2.5, .05, v => '×' + (+v).toFixed(2)));
@@ -492,7 +520,7 @@ document.addEventListener('themechange', () => { editor.invalidate(); patDirty =
 /* ---------------- simpan / muat ---------------- */
 function serialize() {
   return {
-    pattern_config: { v: 2, mode: S.mode, basic: { ...S.basic, trace: S.basic.trace ? { src: S.basic.trace.src, tile: S.basic.trace.tile, gap: S.basic.trace.gap, half: S.basic.trace.half } : undefined }, edit: S.edit, adv: adv ? adv.getState() : advPending },
+    pattern_config: { v: 2, mode: S.mode, cat: S.cat, basic: { ...S.basic, trace: S.basic.trace ? { src: S.basic.trace.src, tile: S.basic.trace.tile, gap: S.basic.trace.gap, half: S.basic.trace.half } : undefined }, edit: S.edit, adv: adv ? adv.getState() : advPending },
     editor_state: { v: 2, model: model?.slug, panelFill: S.panelFill, ribColor: S.ribColor, fabric: S.fabric, bg: S.bg, shadow: S.shadow, layers: S.layers.map(({ img, _w, _h, ...r }) => r) },
   };
 }
@@ -508,8 +536,9 @@ async function deserialize(pc = {}, es = {}) {
   if (pc.adv) { if (adv) adv.setState(pc.adv); else advPending = pc.adv; }
   const m = models.find(x => x.slug === es.model);
   if (m && m !== model) { $('#modelSel').value = models.indexOf(m); await useModel(m, true); }
+  S.catMem = {}; setCatRaw(pc.cat && CATEGORIES.some(c => c.id === pc.cat) ? pc.cat : catOfStyle(S.basic.style));
   syncBasic(); syncEdit(); syncView(); buildPanelFills(); syncLayers();
-  setMode(pc.mode === 'advanced' ? 'advanced' : 'basic');
+  setMode(pc.mode === 'advanced' ? 'advanced' : S.cat);
   invalidateBase();
 }
 function markDirty() { dirtySince = Date.now(); $('#saveState').textContent = projectId ? 'Ada perubahan' : 'Belum disimpan'; scheduleDraft(); }

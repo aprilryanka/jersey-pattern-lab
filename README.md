@@ -1,6 +1,6 @@
 # Jersey Pattern Lab v2
 
-SaaS desain jersey: generator pattern (Basic + Advanced), pratinjau 3D, dan export pola jahit.
+SaaS desain jersey: generator pattern (Basic, Advanced, Tie-dye, Strip, Fauna), pratinjau 3D, dan export pola jahit.
 Stack: Vite (vanilla JS, multi-halaman) + Three.js + Supabase (auth, database, storage).
 
 ## Halaman
@@ -59,3 +59,10 @@ Dari CLO3D ekspor dua file untuk satu garmen:
 
 Upload di Admin → Model 3D → Import. Panel dicocokkan otomatis ke mesh (bbox UV) dan perannya ditebak
 dari posisi 3D (depan/belakang/lengan/rib); bisa dikoreksi sebelum disimpan.
+
+## Kategori pattern (Studio)
+
+Basic, Tie-dye, Strip, dan Fauna memakai satu mesin gambar (`drawBasic` di `src/studio/basic.js`); Advanced punya generator noise sendiri.
+Daftar kategori, motif, dan palet ada di `CATEGORIES` (`basic.js`). Motif Tie-dye (10), Strip (17), dan Fauna (11) ada di
+`src/studio/motifs.js`. Menambah motif: tambahkan `[id, label]` di daftar style, palet di daftar palet, lalu satu `case` di fungsi gambar kategorinya
+(id berawalan `td_`, `st_`, `fa_`). Tambahkan terjemahan EN label baru di `src/lib/i18n.js`.

@@ -1,5 +1,10 @@
 // Motif Basic: 8 motif cepat, digambar di "ruang garmen" (mm, y ke bawah).
 // Posisi acak memakai hash per sel grid global, jadi motif menyambung antar panel.
+// Kategori Tie-dye, Strip, dan Fauna ada di motifs.js dan memakai fungsi gambar yang sama (drawBasic).
+
+import {
+  TIEDYE_STYLES, STRIPE_STYLES, FAUNA_STYLES, TIEDYE_PALETTES, STRIPE_PALETTES, FAUNA_PALETTES, THUMB_SCALE, drawMotif,
+} from './motifs.js';
 
 export const BASIC_STYLES = [
   ['solid', 'Polos'], ['stripes', 'Garis'], ['chevron', 'Chevron'], ['waves', 'Gelombang'],
@@ -12,6 +17,16 @@ export const BASIC_PALETTES = [
   ['#f3f3f3', '#1d3557', '#e63946'], ['#f26a00', '#0d0d0d', '#ffd9b3'], ['#2b2d42', '#8d99ae', '#edf2f4'],
   ['#1b4332', '#95d5b2', '#ffffff'], ['#d7263d', '#1b1b3a', '#f5cb5c'], ['#0d1b2a', '#00b4d8', '#caf0f8'],
 ];
+
+/** Kategori generator berbasis motif. Advanced punya panel sendiri (advanced.js). */
+export const CATEGORIES = [
+  { id: 'basic', label: 'Basic', styles: BASIC_STYLES, palettes: BASIC_PALETTES },
+  { id: 'tiedye', label: 'Tie-dye', styles: TIEDYE_STYLES, palettes: TIEDYE_PALETTES },
+  { id: 'stripes', label: 'Strip', styles: STRIPE_STYLES, palettes: STRIPE_PALETTES },
+  { id: 'fauna', label: 'Fauna', styles: FAUNA_STYLES, palettes: FAUNA_PALETTES },
+];
+export const ALL_STYLES = CATEGORIES.flatMap(c => c.styles);
+export const catOfStyle = id => (CATEGORIES.find(c => c.styles.some(s => s[0] === id)) || CATEGORIES[0]).id;
 
 function hash(i, j, s, k = 0) {
   let n = Math.imul(i | 0, 374761393) + Math.imul(j | 0, 668265263) + Math.imul(s | 0, 1013) + Math.imul(k, 2654435761);
@@ -136,13 +151,13 @@ export function drawBasic(ctx, r, st) {
       }
       break;
     }
-    default: break;
+    default: drawMotif(ctx, r, st); break;
   }
 }
 
 /** Thumbnail motif untuk tombol pilihan. */
 export function drawBasicThumb(canvas, st) {
-  const x = canvas.getContext('2d'), sz = 170 * Math.max(.6, st.scale || 1);
+  const x = canvas.getContext('2d'), sz = 170 * Math.max(.6, st.scale || 1) * (THUMB_SCALE[st.style] || 1);
   x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, canvas.width, canvas.height);
   x.save(); x.scale(canvas.width / sz, canvas.height / sz);
   if (st.style === 'trace') st = { ...st, trace: st.trace && { ...st.trace, tile: (st.trace.tile || 90) * .5 } };
