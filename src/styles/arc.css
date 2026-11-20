@@ -170,6 +170,6 @@ body.studio .field:has(> .v) > .v { float: none; order: 1; }
 body.studio .field:has(> .v) > input, body.studio .field:has(> .v) > select { order: 2; flex: 0 0 100%; }
 
 /* pilihan kategori generator (5 tombol) */
-body.studio .seg.cats { display: grid; grid-template-columns: repeat(5, 1fr); border-radius: 16px; }
+body.studio .seg.cats { display: grid; grid-template-columns: repeat(3, 1fr); border-radius: 16px; }
 body.studio .seg.cats button { padding: 7px 2px; font-size: 12px; text-align: center; min-height: 0; border-radius: 13px; }
 @media (max-width: 760px) { body.studio .seg.cats button { min-height: 40px; padding: 8px 2px; font-size: 12px; } }

@@ -1,16 +1,20 @@
 import { DYE_STYLES, drawDye } from './dye.js';
+import { STRIPEX_STYLES, STRIPEX_PALETTES, drawStripeX } from './stripex.js';
+import { VINTAGE_STYLES, VINTAGE_PALETTES, VINTAGE_STYLE_PALETTE, VINTAGE_THUMB, drawVintage } from './vintage.js';
 
 // Motif kategori Tie-dye (dye.js), Strip, dan Fauna. Digambar di "ruang garmen" (mm, y ke bawah), sama seperti Basic.
 // Posisi acak memakai hash per sel grid global, jadi motif menyambung antar panel.
 // Warna: c1 = dasar, c2 = warna utama motif, c3 = aksen.
 
 export const TIEDYE_STYLES = DYE_STYLES;
+export const VINTAGE = { styles: VINTAGE_STYLES, palettes: VINTAGE_PALETTES };
 export const STRIPE_STYLES = [
   ['st_classic', 'Klasik'], ['st_pin', 'Pinstripe'], ['st_chalk', 'Chalk'], ['st_double', 'Ganda'],
   ['st_wide_thin', 'Lebar-tipis'], ['st_triple', 'Tiga'], ['st_hoops', 'Hoops'], ['st_diag', 'Diagonal'],
   ['st_sash', 'Selempang'], ['st_racing', 'Racing'], ['st_fade', 'Pudar'], ['st_grow', 'Menebal'],
   ['st_barcode', 'Barcode'], ['st_zigzag', 'Zigzag'], ['st_wavy', 'Bergelombang'], ['st_dash', 'Putus-putus'],
   ['st_broken', 'Patah'],
+  ...STRIPEX_STYLES,
 ];
 export const FAUNA_STYLES = [
   ['fa_zebra', 'Zebra'], ['fa_tiger', 'Harimau'], ['fa_leopard', 'Macan tutul'], ['fa_jaguar', 'Jaguar'],
@@ -27,6 +31,7 @@ export const STRIPE_PALETTES = [
   ['#ffffff', '#111111', '#e8c547'], ['#ffffff', '#0b3d91', '#f2b705'], ['#c8102e', '#ffffff', '#111111'], ['#0b3d91', '#ffffff', '#e63946'],
   ['#006b3f', '#ffffff', '#f2b705'], ['#111111', '#ffffff', '#c8102e'], ['#7b1fa2', '#ffffff', '#f2b705'], ['#f2b705', '#111111', '#ffffff'],
   ['#6ec6ff', '#ffffff', '#0b3d91'], ['#800020', '#6ec6ff', '#ffffff'], ['#ff7a00', '#111111', '#ffffff'], ['#0a8f8f', '#ffffff', '#1f2a44'],
+  ...STRIPEX_PALETTES,
 ];
 export const FAUNA_PALETTES = [
   ['#f5f5f0', '#101010', '#9a9a9a'], ['#f08a24', '#1a1208', '#f6e6c8'], ['#d9a441', '#2a1a0c', '#a8742a'], ['#e6e3dc', '#3a3a3a', '#a9a59c'],
@@ -36,11 +41,14 @@ export const FAUNA_PALETTES = [
 
 // Palet alami per motif fauna: dipakai otomatis saat motif dipilih (selama warna belum diubah manual).
 export const STYLE_PALETTE = {
+  ...Object.fromEntries(Object.entries(VINTAGE_STYLE_PALETTE)),
+  ...Object.fromEntries(Object.entries({ sx_bold: 0, sx_rhythm: 2, sx_multi: 5, sx_pin_gold: 1, sx_fade: 4, sx_rainbow: 5, sx_blur: 3, sx_zig_in: 3, sx_line_in: 0, sx_pixel: 0, sx_bolt: 2, sx_ibiza: 7 }).map(([k, v]) => [k, v + 12])),
   fa_zebra: 0, fa_tiger: 1, fa_leopard: 2, fa_jaguar: 2, fa_cheetah: 2, fa_giraffe: 5, fa_cow: 4, fa_dalmatian: 7, fa_snake: 6, fa_scales: 9, fa_peacock: 10,
 };
 
 // Motif berukuran besar perlu area thumbnail lebih luas supaya terlihat utuh.
 export const THUMB_SCALE = {
+  ...VINTAGE_THUMB, sx_bold: 1.6, sx_rhythm: 1.8, sx_multi: 1.3, sx_pin_gold: 1.2, sx_fade: 2, sx_rainbow: 1.6, sx_blur: 1.6, sx_zig_in: 1.7, sx_line_in: 1.6, sx_pixel: 2, sx_bolt: 1.6, sx_ibiza: 1.5,
   td_spiral: 3.3, td_swirl: 3.3, td_burst: 3, td_mini: 1.8, td_ombre: 3.8, td_crush: 2.7, td_cloud: 3.8,
   st_sash: 3, st_racing: 1.6, st_grow: 2, st_triple: 1.4, st_barcode: 1.4, st_broken: 1.2,
   fa_zebra: 2, fa_tiger: 1.8, fa_leopard: 1.6, fa_jaguar: 1.6, fa_cheetah: 1.3, fa_giraffe: 1.8, fa_cow: 3.2, fa_dalmatian: 1.5, fa_snake: 2.4, fa_scales: 1, fa_peacock: 1.8,
@@ -343,6 +351,8 @@ function drawFauna(ctx, r, st, c) {
 export function drawMotif(ctx, r, st) {
   const id = st.style || '';
   if (id.startsWith('st_')) return drawStripe(ctx, r, st, st.colors);
+  if (id.startsWith('sx_')) return drawStripeX(ctx, r, st);
+  if (id.startsWith('vt_')) return drawVintage(ctx, r, st);
   if (id.startsWith('td_')) return drawDye(ctx, r, st);
   if (id.startsWith('fa_')) return drawFauna(ctx, r, st, st.colors);
   return false;
